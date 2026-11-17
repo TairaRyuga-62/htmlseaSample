@@ -1,0 +1,1778 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>ディープ・レンジャー（試作）</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#021018;color:#e6f7ff;font:14px/1.5 system-ui,"Hiragino Sans","Noto Sans JP",sans-serif;user-select:none;-webkit-user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+#ov{touch-action:none;cursor:crosshair}
+.hud{position:fixed;pointer-events:none;text-shadow:0 1px 4px #000c}
+#mis{top:12px;left:14px;max-width:46vw;font-weight:600}
+#mis small{display:block;font-weight:400;opacity:.85}
+#dep{top:12px;right:14px;text-align:right;font-weight:700;font-size:20px}
+#dep small{display:block;font-size:12px;font-weight:500}
+#o2w{left:50%;bottom:18px;transform:translateX(-50%);width:min(420px,60vw)}
+#o2l{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-bottom:3px}
+#o2b{height:10px;border-radius:6px;background:#0008;box-shadow:0 0 0 1px #9fe8ff66;overflow:hidden}
+#stl{font-size:11px;font-weight:700;margin:5px 0 2px;opacity:.85}
+#stb{height:6px;border-radius:4px;background:#0008;overflow:hidden}
+#stf{height:100%;width:100%;background:linear-gradient(90deg,#c8f560,#f4ff9a);transform-origin:0}
+#o2w.shake{animation:sh .35s}
+@keyframes sh{0%,100%{transform:translateX(-50%)}25%{transform:translateX(calc(-50% - 8px))}75%{transform:translateX(calc(-50% + 8px))}}
+#o2f{height:100%;width:100%;background:linear-gradient(90deg,#33d6ff,#a8f4ff);transform-origin:0;transition:background .3s}
+#caps{left:14px;bottom:14px;display:flex;gap:8px;pointer-events:auto}
+.cap{width:62px;height:62px;border-radius:12px;background:#02202cc0;box-shadow:inset 0 0 0 2px #7fdfff55;display:grid;place-items:center;font-size:11px;text-align:center;line-height:1.2;cursor:pointer;position:relative}
+.cap i{display:block;width:22px;height:22px;border-radius:50%;margin:0 auto 3px}
+.cap b{position:absolute;top:3px;left:6px;font-size:10px;opacity:.7}
+.cap.empty{opacity:.35;cursor:default}
+#msg{left:50%;top:22%;transform:translateX(-50%);font-size:22px;font-weight:800;text-align:center;transition:opacity .4s;opacity:0;white-space:nowrap}
+#map{right:14px;top:70px;left:auto;bottom:auto;inset:auto;right:14px;top:70px;width:104px;height:251px;border-radius:10px;box-shadow:0 0 0 1px #7fdfff55;background:#0008}
+#tip{left:14px;bottom:86px;max-width:300px;padding:8px 12px;border-radius:10px;background:#03202ce8;box-shadow:inset 0 0 0 1px #7fdfff77;font-size:13px;display:none}
+#tip b{font-size:15px}
+#hint{left:50%;bottom:52px;transform:translateX(-50%);font-size:14px;font-weight:700;color:#fff6c0;white-space:nowrap}
+.cap.buoy{width:auto;padding:0 10px;background:#3a2a0cc0;box-shadow:inset 0 0 0 2px #ffcf7a77}
+#help{right:14px;bottom:14px;font-size:12px;text-align:right;opacity:.85}
+#base{position:fixed;inset:0;overflow:auto;background:#021018e6;display:flex;justify-content:center;padding:28px 16px;box-sizing:border-box}
+#base.hide,#res.hide,.hidden{display:none!important}
+.panel{width:min(880px,100%);display:grid;gap:14px;align-content:start}
+.h1{font-size:30px;font-weight:900;letter-spacing:.05em;color:#bff3ff}
+.h1 small{font-size:13px;font-weight:500;color:#7fb8c8;margin-left:10px}
+.card{background:#06283a;border-radius:14px;padding:14px 16px;box-shadow:inset 0 0 0 1px #2c6a85}
+.card h3{margin:0 0 8px;font-size:14px;color:#8fe4ff;letter-spacing:.08em}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.up{background:#0a3449;border-radius:10px;padding:10px 12px;display:grid;gap:4px}
+.up b{font-size:14px}.up small{color:#9cc9d8}
+button{border:0;border-radius:9px;padding:9px 14px;font:700 14px system-ui,sans-serif;cursor:pointer;background:#1d5f7c;color:#eaffff}
+button:hover{filter:brightness(1.15)}button:disabled{opacity:.4;cursor:default;filter:none}
+#go{background:linear-gradient(#5ff0ff,#1ab0d6);color:#03303e;font-size:18px;padding:12px 30px}
+.pearl{color:#ffe9a8;font-weight:800}
+.inp{background:#0a2a3a;color:#fff;border:1px solid #2e6b80;border-radius:8px;padding:7px 9px;font:inherit;font-size:14px}
+.sp{display:flex;gap:10px;align-items:center;background:#0a3449;border-radius:10px;padding:8px 12px}
+.sp i{width:26px;height:26px;border-radius:50%;flex:none}
+#res{position:fixed;inset:0;display:grid;place-items:center;background:#021018cc}
+#err{position:fixed;inset:0;display:none;place-items:center;text-align:center;padding:20px;font-size:16px}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<canvas id="ov"></canvas>
+<div class="hud" id="mis"></div>
+<div class="hud" id="dep"></div>
+<div class="hud" id="o2w"><div id="o2l"><span>酸素</span><span id="o2t"></span></div><div id="o2b"><div id="o2f"></div></div><div id="stl"><span>スタミナ（Shiftでダッシュ）</span></div><div id="stb"><div id="stf"></div></div></div>
+<div class="hud" id="caps"></div>
+<div class="hud" id="msg"></div>
+<canvas class="hud" id="map" width="240" height="580"></canvas>
+<div class="hud" id="tip"></div>
+<div class="hud" id="hint"></div>
+<div class="hud" id="help">WASD 泳ぐ · Shift 急ぐ · ドラッグ 光の輪 · 1〜5 能力 · 右クリック 逃がす · E 浮上 · R 緊急ブイ · F 仲間に酸素</div>
+<div id="base">
+  <div class="panel">
+    <div class="h1">ディープ・レンジャー<small>試作 · 光の輪で生き物を捕まえ、その力で深海へ</small></div>
+    <div class="card"><h3>ミッション</h3><div id="bMis"></div><div class="row" style="margin-top:10px"><button id="go">潜る</button><span>所持金 <span class="pearl" id="bPearl"></span> G</span></div></div>
+    <div class="card" id="mpCard"><h3>マルチプレイ（2〜4人・協力）</h3>
+      <div class="row"><input id="mpName" class="inp" placeholder="なまえ" maxlength="8" style="width:110px"><button id="mpHost">部屋を作る</button><input id="mpCode" class="inp" placeholder="コード" maxlength="4" style="width:80px;text-transform:uppercase"><button id="mpJoin">参加する</button></div>
+      <div id="mpSt" style="font-size:13px;color:#b9dbe6;margin-top:8px">ひとりで遊ぶときはそのまま「潜る」。友達と遊ぶときは、1人が部屋を作り、ほかの人はコードを入れて参加。</div></div>
+    <div class="card"><h3>準備（次の潜水に連れて行く生き物）</h3><div id="bPrep"></div></div>
+    <div class="card"><h3>強化（ゴールドをつかう）</h3><div class="grid" id="bUp"></div></div>
+    <div class="card"><h3>道具</h3><div class="grid" id="bItem"></div></div>
+    <div class="card"><h3 id="bDexT">図鑑</h3><div class="grid" id="bAq"></div></div>
+    <div class="card"><h3>遊び方</h3><div style="font-size:13px;color:#b9dbe6">
+      WASDで泳ぎます（Wが深い方向）。生き物の近くで<b>ドラッグを始め、点線の輪に沿ってぐるっとなぞる</b>と、なぞった分だけ光の弧が伸びます。1周するごとに1回分。必要な周回数で捕獲できます。描いている間は時間がゆっくり流れます。カニ・マンタ・ハリセンボンは暴れるので、線に触れられると切れます。サメに触れると酸素が減ります。<br>
+      捕まえた生き物は数字キー（または左下のアイコン）で力を借ります。使った生き物は海に帰ります。<br>
+      酸素がなくなる前に、スタート地点の光るブイ（<b>E</b>で浮上）まで戻りましょう。戻れないと、カプセルの生き物と拾った物の半分を失います。
+    </div><div class="row" style="margin-top:8px"><button id="reset" style="background:#3a1d24">記録を消す</button></div></div>
+  </div>
+</div>
+<div id="res" class="hide"><div class="card" style="min-width:300px;max-width:90vw"><h3 id="rT"></h3><div id="rB"></div><div class="row" style="margin-top:12px"><button id="rOk">拠点にもどる</button></div></div></div>
+<div id="err"></div>
+<script>
+(async () => {
+"use strict";
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const { sin, cos, sqrt, min, max, abs, floor, ceil, PI, pow, atan2, hypot, exp, round } = Math;
+const TAU = PI * 2;
+const clamp = (x, a, b) => x < a ? a : x > b ? b : x;
+const lerp = (a, b, t) => a + (b - a) * t;
+const sstep = (a, b, x) => (x = clamp((x - a) / (b - a), 0, 1), x * x * (3 - 2 * x));
+const norm = v => { const l = hypot(...v) || 1; return v.map(c => c / l) };
+let seedS = 1;
+const seed = s => { seedS = Math.imul(s, 7919) + 99991 | 0 };
+const rand = () => { seedS = seedS + 0x6D2B79F5 | 0; let t = Math.imul(seedS ^ seedS >>> 15, 1 | seedS); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296 };
+const rb = (a, b) => a + (b - a) * rand();
+const hash3 = (x, y, z) => { let r = Math.imul(x, 374761393) + Math.imul(y, 668265263) + Math.imul(z, 1274126177) | 0; r = Math.imul(r ^ r >>> 13, 1274126177); return ((r ^ r >>> 16) >>> 0) / 4294967296 };
+const noise3 = (x, y, z) => {
+  const X = floor(x), Y = floor(y), Z = floor(z); let u = x - X, v = y - Y, w = z - Z;
+  u = u * u * (3 - 2 * u); v = v * v * (3 - 2 * v); w = w * w * (3 - 2 * w);
+  const a = lerp(lerp(hash3(X, Y, Z), hash3(X + 1, Y, Z), u), lerp(hash3(X, Y + 1, Z), hash3(X + 1, Y + 1, Z), u), v);
+  const b = lerp(lerp(hash3(X, Y, Z + 1), hash3(X + 1, Y, Z + 1), u), lerp(hash3(X, Y + 1, Z + 1), hash3(X + 1, Y + 1, Z + 1), u), v);
+  return lerp(a, b, w);
+};
+const fbm = (x, y, z, o = 3) => { let a = .5, s = 0; for (let i = 0; i < o; i++) { s += a * noise3(x, y, z); x = x * 2.03 + 17.1; y = y * 2.03 + 31.7; z = z * 2.03 + 5.3; a *= .5 } return s / (1 - 2 * a) };
+
+// ================= world layout =================
+// the dive goes along +Z: reef shallows → current gate → kelp forest → boulder gate → trench → wreck
+const Z_GATE1 = [98, 118], Z_BOULDER = 247, Z_WRECK = 372, Z_CHEST = 226;
+const pathX = z => 16 * sin(z * .012) + 7 * sin(z * .031 + 1);
+const halfW = z => { let w = 40; w = lerp(w, 7.5, sstep(86, 98, z)); w = lerp(w, 29 + 5 * sin(z * .05), sstep(116, 128, z)); w = lerp(w, 5.5, sstep(230, 240, z)); w = lerp(w, 19 + 3 * sin(z * .07), sstep(254, 266, z)); w = lerp(w, 4.5, sstep(382, 392, z)); w = lerp(w, 44 + 6 * sin(z * .04), sstep(410, 432, z)); return w };
+const COVES = [[-50, 50, 21, "西の入り江"], [48, 170, 18, "光る洞"], [-46, 202, 16, "カメの寝床"], [34, 322, 16, "深海の窪み"]].map(([dx, z, r, n]) => ({ x: pathX(z) + dx, z, r, name: n }));
+const smin = (a, b, k) => { const h = max(k - abs(a - b), 0) / k; return min(a, b) - h * h * k * .25 };
+const Z_ABYSS = 420, Z_BOSS = 500;
+const floorD = z => z < 92 ? lerp(10, 17, clamp(z / 92, 0, 1)) : z < 236 ? lerp(17, 30, (z - 92) / 144) : z < 388 ? lerp(30, 74, clamp((z - 236) / 140, 0, 1)) : z < Z_ABYSS ? lerp(74, 84, (z - 388) / 32) : lerp(84, 110, clamp((z - Z_ABYSS) / 70, 0, 1));
+const heightAt = (x, z) => {
+  let t = abs(x - pathX(z)) - halfW(z);
+  for (const c of COVES) t = smin(t, hypot(x - c.x, z - c.z) - c.r, 9);
+  t += (fbm(x * .04, 0, z * .04) - .5) * 9;
+  let y = -floorD(z) + (fbm(x * .08, 1, z * .08) - .5) * 2.4 + .35 * sin(x * .7 + z * .25 + fbm(x * .2, 4, z * .2) * 3) * sstep(0, -5, t);
+  y += 3.5 * max(0, fbm(x * .06, 3, z * .06) - .58) * 6 * sstep(-2, -10, t) * sstep(130, 90, z);
+  y += lerp(24, 42, sstep(400, 430, z)) * sstep(0, 7, t) + 7 * fbm(x * .07, 2, z * .07) * sstep(2, 12, t);
+  y += 34 * sstep(-3, -11, z) + 44 * sstep(548, 558, z);
+  y -= 6 * exp(-(pow(x - pathX(Z_BOSS), 2) + pow(z - Z_BOSS, 2)) / 900);
+  return y;
+};
+const ZONES = [[0, "サンゴの浅瀬"], [Z_GATE1[0], "海流の谷"], [124, "ケルプの森"], [238, "大岩の通路"], [258, "海溝"], [Z_WRECK - 10, "沈没船"], [386, "岩の裂け目"], [Z_ABYSS, "深淵"]];
+
+// ================= game data =================
+const SPECIES = {
+  clam: { name: "アワガイ", loops: 1, color: "#f3e3c3", ability: "空気の泡：酸素を35回復", range: 10, pearls: 6 },
+  seahorse: { name: "タツノオトシゴ", loops: 1, color: "#ffe27a", ability: "探知：40秒、近くの金貨と宝の場所が見える", range: 70, pearls: 7 },
+  clown: { name: "クマノミ", loops: 2, color: "#ffd9a8", ability: "守り：30秒、危険な生き物に触れても平気", range: 10, pearls: 8 },
+  jelly: { name: "ヒカリクラゲ", loops: 2, color: "#9ff4ff", ability: "照らす：45秒、まわりが明るくなる", range: 30, pearls: 8 },
+  turtle: { name: "ウミガメ", loops: 3, color: "#8fe08a", ability: "帰還：すぐに浮上して帰る", range: 12, pearls: 18 },
+  manta: { name: "ナガレマンタ", loops: 3, color: "#8fa8ff", ability: "乗る：25秒、速く泳ぎ海流に負けない", range: 8, pearls: 15, wild: true },
+  puffer: { name: "ハリセンボン", loops: 2, color: "#ff4d4d", ability: "威嚇：30秒、危険な生き物が逃げていく", range: 30, pearls: 10, wild: true, danger: 8 },
+  crab: { name: "イワクダキガニ", loops: 2, color: "#ff4d4d", ability: "砕く：近くの大岩を壊す", range: 14, pearls: 10, wild: true, danger: 8 },
+  isopod: { name: "ダイオウグソクムシ", loops: 2, color: "#d4dbe8", ability: "鎧：40秒、受けるダメージが半分", range: 10, pearls: 14 },
+  angler: { name: "チョウチンアンコウ", loops: 3, color: "#ff4d4d", ability: "灯り：60秒、深海を広く照らす（巨影も照らせる）", range: 40, pearls: 22, wild: true, danger: 10 },
+  squid: { name: "ダイオウイカ（光る巨影）", loops: 6, color: "#ff3df0", ability: "墨の帳：40秒、危険な生き物に襲われない", range: 30, pearls: 150, danger: 22, legend: true },
+  shark: { name: "サメ", loops: 4, color: "#ff2e2e", ability: "護衛：40秒、そばを泳いで危険な生き物を追い払う", range: 25, pearls: 35, wild: true, danger: 20 },
+};
+const UPG = {
+  tank: { name: "酸素タンク", costs: [30, 60, 100], val: l => [100, 140, 180, 230][l], fmt: v => `酸素 ${v}` },
+  fin: { name: "フィン", costs: [35, 70], val: l => [6, 7.2, 8.4][l], fmt: v => `速さ ${v}m/秒 · スタミナ ${100 + [6, 7.2, 8.4].indexOf(v) * 25}` },
+  light: { name: "ライト", costs: [40, 80], val: l => [[9, 22], [14, 28], [19, 34]][l], fmt: v => `照らす ${v[0]}m · 輪が届く ${v[1]}m` },
+  caps: { name: "カプセル", costs: [50, 90], val: l => [3, 4, 5][l], fmt: v => `${v}匹まで連れて行ける` },
+  suit: { name: "耐圧スーツ", costs: [70, 120], val: l => [42, 80, 120][l], fmt: v => `${v}mまで潜れる` },
+};
+const MISSIONS = [
+  { title: "アワガイを2匹つれて帰る", hint: "浅瀬の白い貝を、光の輪で囲んで捕まえよう（1周でOK）。", reward: 25, check: r => r.banked.clam >= 2 },
+  { title: "ケルプの森の宝箱をとってくる", hint: "狭い谷の強い海流は、マンタに乗れば越えられる。マンタは3周囲む必要があり、暴れるので注意。", reward: 50, check: r => r.items.chest },
+  { title: "ウミガメを連れて帰る", hint: "脇道の入り江「カメの寝床」にいる。ウミガメの力を使えば、その場からすぐ帰れる（使うとカメは海に帰るので、連れて帰るなら緊急ブイかブイから浮上）。", reward: 40, check: r => r.banked.turtle >= 1 },
+  { title: "海溝の沈没船から航海日誌を回収する", hint: "大岩はカニで砕き、暗い海溝はクラゲで照らそう。深さ42mより下は耐圧スーツが必要。", reward: 120, check: r => r.items.log },
+  { ch: 2, title: "海溝の裂け目の先「深淵」にたどり着く", hint: "沈没船の奥、岩の裂け目を抜けた先。深さ80mより下は耐圧スーツLv2（120m）が必要。たどり着いたら無事に帰還しよう。", reward: 60, check: r => r.abyss },
+  { ch: 2, title: "チョウチンアンコウを連れて帰る", hint: "深淵の暗闇で灯りを揺らしている。近づきすぎると噛みつくので注意（赤い印）。", reward: 70, check: r => r.banked.angler >= 1 },
+  { ch: 2, title: "光る巨影を捕まえて連れて帰る", hint: "巨影は暗闇では囲めない。クラゲかアンコウの光で照らしている間に6周。赤い帯は触手の薙ぎ払い、帯の外へ逃げよう。墨を吐かれたら光で対抗。", reward: 300, check: r => r.banked.squid >= 1 },
+];
+const LOG_TEXT = "『…海溝のさらに奥、岩の裂け目の向こうで、船より大きな光る影がゆっくりと動いていた。あれは魚ではない。我々は引き返したが、あの光はまだ目に焼きついている』";
+const newReq = () => { const pool = Object.keys(SPECIES).filter(k => k !== "clam" && !SPECIES[k].legend); const sp = pool[rand() * pool.length | 0], n = SPECIES[sp].loops >= 3 ? 1 : 2; return { sp, n, reward: 15 + SPECIES[sp].pearls * n } };
+const defSave = () => ({ pearls: 0, up: { tank: 0, fin: 0, light: 0, caps: 0, suit: 0 }, aq: Object.fromEntries(Object.keys(SPECIES).map(k => [k, 0])), mission: 0, dives: 0, buoys: 0, tut: 0, carry: [], tank: [], req: null });
+const TANK_MAX = 5;
+let save = defSave();
+try { const s = JSON.parse(localStorage.diveRanger || "null"); if (s && s.up) { save = Object.assign(defSave(), s); save.aq = Object.assign(defSave().aq, s.aq) } } catch {}
+if (params.has("fresh")) save = defSave();
+const persist = () => { try { localStorage.diveRanger = JSON.stringify(save) } catch {} };
+
+// ================= WebGPU =================
+const showErr = m => { const e = $("err"); e.style.display = "grid"; e.textContent = m; $("base").classList.add("hide") };
+if (!navigator.gpu) { showErr("この試作はWebGPUが必要です。ChromeかEdgeの最新版で開いてください。"); return }
+const adapter = await navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
+if (!adapter) { showErr("WebGPUのアダプターが見つかりません。"); return }
+const device = await adapter.requestDevice();
+device.addEventListener("uncapturederror", e => console.error("GPU: " + e.error.message));
+const canvas = $("c"), ctx = canvas.getContext("webgpu"), canvasFormat = navigator.gpu.getPreferredCanvasFormat(), queue = device.queue;
+const ov = $("ov"), o2d = ov.getContext("2d");
+const HDR = "rgba16float", DEPTH = "depth32float", TU = GPUTextureUsage, BU = GPUBufferUsage, MS = 4;
+const mod = code => device.createShaderModule({ code });
+const buf = (data, usage) => { const b = device.createBuffer({ size: max(16, data.byteLength + 3 & -4), usage: usage | BU.COPY_DST }); if (data.byteLength) queue.writeBuffer(b, 0, data.buffer || data, data.byteOffset || 0, data.byteLength); return b };
+const tex = (w, h, format, usage, o = {}) => device.createTexture({ size: [w, h], format, usage, mipLevelCount: o.mips || 1, sampleCount: o.samples || 1 });
+
+// ================= WGSL =================
+const NOISE = /* wgsl */`
+fn ss(a:f32,b:f32,x:f32)->f32{let t=clamp((x-a)/(b-a),0.,1.);return t*t*(3.-2.*t);}
+fn sat(x:f32)->f32{return clamp(x,0.,1.);}
+fn h31(p:vec3f)->f32{var q=fract(p*vec3f(.1031,.1030,.0973));q+=dot(q,q.yzx+33.33);return fract((q.x+q.y)*q.z);}
+fn h33(p:vec3f)->vec3f{var q=fract(p*vec3f(.1031,.1030,.0973));q+=dot(q,q.yxz+33.33);return fract((q.xxy+q.yxx)*q.zyx);}
+fn hs(x:f32)->f32{return fract(sin(x*127.1)*43758.5453);}
+`;
+const FULL = `@vertex fn vsFull(@builtin(vertex_index)i:u32)->@builtin(position)vec4f{return vec4f(f32(i32(i&1u)*4-1),f32(i32(i>>1u)*4-1),0.,1.);}\n`;
+const COMMON = NOISE + /* wgsl */`
+struct G{vp:mat4x4f,cam:vec4f,res:vec4f,fwd:vec4f,right:vec4f,up:vec4f,mis:vec4f,lp:array<vec4f,8>,lc:array<vec4f,8>};
+@group(0)@binding(0)var<uniform>g:G;
+@group(0)@binding(1)var sR:sampler;
+@group(0)@binding(2)var tD:texture_2d<f32>;
+const LSUN=vec3f(.2,.95,.24);
+fn dep(p:vec3f)->f32{return max(-p.y,0.);}
+fn sunE(p:vec3f)->vec3f{return vec3f(.95,1.,1.)*1.45*exp(-vec3f(.10,.045,.034)*dep(p));}
+fn amb(p:vec3f,n:vec3f)->vec3f{return mix(vec3f(.015,.05,.07),vec3f(.10,.30,.40),n.y*.5+.5)*exp(-vec3f(.075,.042,.036)*dep(p));}
+fn pointL(p:vec3f,n:vec3f)->vec3f{
+ var s=vec3f(0.);let nl=u32(g.mis.y);
+ for(var i=0u;i<8u;i++){if(i>=nl){break;}let L=g.lp[i];let v=L.xyz-p;let d=length(v);let a=sat(1.-d/L.w);s+=g.lc[i].rgb*a*a*(max(dot(n,v/max(d,1e-3)),0.)*.75+.25);}
+ return s;
+}
+fn caus(p:vec3f)->f32{
+ let q=(p.xz-LSUN.xz*(p.y/LSUN.y))*.32;let t=g.cam.w*.55;
+ var i=q;var c=0.;
+ for(var n=1;n<=4;n++){let tt=t*(1.-3.5/f32(n));i=q+vec2f(cos(tt-i.x)+sin(tt+i.y),sin(tt-i.y)+cos(tt+i.x));
+  let s=sin(i.x+tt);let k=cos(i.y+tt);c+=abs(s*k)/(1.25*sqrt(s*s+k*k)+1e-4);}
+ c=1.17-pow(c/4.,1.4);return pow(abs(c),7.)*exp(-dep(p)*.06);
+}
+fn fogCol(d:f32,up:f32)->vec3f{return mix(vec3f(.012,.10,.15),vec3f(.05,.28,.38),ss(-.6,.8,up))*exp(-vec3f(.085,.05,.042)*d);}
+fn fogc(c:vec3f,p:vec3f)->vec3f{
+ let v=p-g.cam.xyz;let d=length(v);
+ let ext=exp(-d*vec3f(.062,.03,.024));
+ let fc=fogCol(dep(mix(g.cam.xyz,p,.5)),v.y/max(d,1e-3));
+ var lf=vec3f(0.);let nl=u32(g.mis.y);
+ for(var i=0u;i<8u;i++){if(i>=nl){break;}let L=g.lp[i];let rd=v/max(d,1e-3);let t=clamp(dot(L.xyz-g.cam.xyz,rd),0.,d);let q=g.cam.xyz+rd*t;let dd=distance(q,L.xyz);lf+=g.lc[i].rgb*.05*exp(-dd*dd/(L.w*L.w*.15))*min(t,L.w)/L.w;}
+ return c*ext+(fc+lf)*(1.-ext);
+}
+struct TP{h:f32,c:f32,n:vec3f};
+fn tri(p:vec3f,n:vec3f,s:f32)->TP{
+ var w=pow(abs(n),vec3f(4.));w/=(w.x+w.y+w.z);
+ let x=textureSample(tD,sR,p.zy*s);let y=textureSample(tD,sR,p.xz*s);let z=textureSample(tD,sR,p.xy*s);
+ var o:TP;o.h=x.b*w.x+y.b*w.y+z.b*w.z;o.c=x.a*w.x+y.a*w.y+z.a*w.z;
+ let a=x.rg*2.-1.;let b=y.rg*2.-1.;let c=z.rg*2.-1.;
+ o.n=vec3f(0.,a.y,a.x)*w.x+vec3f(b.x,0.,b.y)*w.y+vec3f(c.x,c.y,0.)*w.z;return o;
+}
+fn outc(c:vec3f)->vec4f{return vec4f(min(max(c,vec3f(0.)),vec3f(50.)),1.);}
+`;
+const TERRAIN_WGSL = COMMON + /* wgsl */`
+struct TI{@location(0)p:vec3f,@location(1)n:vec4f};
+struct TO{@builtin(position)cp:vec4f,@location(0)wp:vec3f,@location(1)n:vec3f,@location(2)ao:f32};
+@vertex fn vs(i:TI)->TO{var o:TO;o.cp=g.vp*vec4f(i.p,1.);o.wp=i.p;o.n=i.n.xyz;o.ao=i.n.w;return o;}
+@fragment fn fs(i:TO)->@location(0)vec4f{
+ let n0=normalize(i.n);let p=i.wp;
+ let A=tri(p,n0,.11);let B=tri(p,n0,.42);
+ let big=textureSample(tD,sR,p.xz*.013).a;
+ let flat_=ss(.55,.85,n0.y);
+ let trench=ss(245.,285.,p.z);let abyss=ss(400.,440.,p.z);
+ let kelp=ss(118.,132.,p.z)*(1.-trench);
+ var sand=mix(vec3f(.62,.56,.43),vec3f(.50,.48,.38),kelp)*(.78+.35*B.h)*(.9+.2*big);
+ sand=mix(sand,vec3f(.22,.22,.25)*(.7+.5*B.h),trench);
+ var rock=vec3f(.34,.31,.29)*(.6+.6*A.h);
+ let cm=ss(.5,.68,A.c*.7+big*.5)*(1.-trench)*(1.-kelp*.6)*ss(.3,.75,n0.y);
+ let hue=fract(big*3.1+A.c);
+ var coral=vec3f(.85,.36,.30);if(hue>.33){coral=vec3f(.62,.30,.68);}if(hue>.66){coral=vec3f(.95,.62,.28);}
+ rock=mix(rock,coral*(.55+.6*B.h),cm*.85);
+ rock=mix(rock,vec3f(.12,.12,.14)*(.6+.6*A.h),trench);
+ let alb=mix(rock,sand,flat_);
+ let N=normalize(n0+(A.n*.5+B.n*.45)*mix(1.,.45,flat_));
+ let E=sunE(p);
+ var c=alb*(E*(max(dot(N,normalize(LSUN)),0.)*.75+.15)*(1.+caus(p)*1.6*ss(.1,.8,N.y))*i.ao+amb(p,N)*i.ao+pointL(p,N));
+ let gq=p*1.3;let gc=floor(gq);let gf=fract(gq)-.5-(h33(gc)-.5)*.6;
+ let glow=ss(.09,.02,length(gf))*step(.9,h31(gc))*trench*ss(.5,.1,n0.y);
+ c+=mix(vec3f(.2,.9,1.),vec3f(.5,.4,1.),abyss)*glow*(.6+.4*sin(g.cam.w*2.+gc.x*3.+gc.z))*(1.+abyss*1.5);
+ return outc(fogc(c,p));
+}`;
+const MESH_WGSL = COMMON + /* wgsl */`
+struct MI{@location(0)p:vec3f,@location(1)n:vec4f,@location(2)col:vec4f,@location(3)a:vec4f,@location(4)b:vec4f,@location(5)c:vec4f};
+struct MO{@builtin(position)cp:vec4f,@location(0)wp:vec3f,@location(1)n:vec3f,@location(2)col:vec3f,@location(3)@interpolate(flat)c:vec4f,@location(4)@interpolate(flat)gl:f32,@location(5)op:vec3f};
+fn rotY(v:vec3f,a:f32)->vec3f{let c=cos(a);let s=sin(a);return vec3f(c*v.x+s*v.z,v.y,-s*v.x+c*v.z);}
+fn rotZ(v:vec3f,a:f32)->vec3f{let c=cos(a);let s=sin(a);return vec3f(c*v.x-s*v.y,s*v.x+c*v.y,v.z);}
+fn rotX(v:vec3f,a:f32)->vec3f{let c=cos(a);let s=sin(a);return vec3f(v.x,c*v.y-s*v.z,s*v.y+c*v.z);}
+fn anim(p:vec3f,aux:f32,ty:i32,t:f32)->vec3f{
+ var l=p;
+ if(ty==1){l.x+=sin(t*9.+l.z*5.)*.16*(.3-l.z);}
+ else if(ty==2){let u=abs(aux);l.y+=.36*pow(u,1.6)*sin(t*1.6-u*1.2)-.08*sin(t*1.6);l.x+=select(0.,sin(t*.9+l.z*2.)*.12,u<.001&&l.z<-.4);}
+ else if(ty==3){let pu=sin(t*2.4);if(aux<.01){l=vec3f(l.x*(1.+.12*pu),l.y*(1.-.08*pu),l.z*(1.+.12*pu));}else{l.x+=sin(t*1.6+aux*5.+l.z)*.16*aux;l.z+=cos(t*1.3+aux*4.+l.x)*.16*aux;l.y+=pu*.05*aux;}}
+ else if(ty==4){if(abs(aux)>.01){l.y+=abs(sin(t*11.+aux*7.))*.07;}}
+ else if(ty==5){if(aux>.9){let a=.42*(.5+.5*sin(t*1.3));let q=l-vec3f(0.,0.,-.42);l=rotX(q,-a)+vec3f(0.,0.,-.42);}}
+ else if(ty==6){if(abs(aux)>.01){l.y+=sin(t*7.+sign(aux)*1.6)*.16*abs(aux);}}
+ else if(ty==7){if(abs(aux)>.01){l.y+=sin(t*2.2-abs(l.x)*.8)*.32*abs(l.x)*abs(aux);}l.y+=sin(t*1.1)*.03;}
+ else if(ty==8){let pu=1.+.06*sin(t*3.);l*=pu;if(aux>.5){l*=1.+.05*sin(t*6.);}}
+ else if(ty==10||ty==11){let k=max(0.,.15-l.z);let f=select(3.4,1.1,ty==11);let a=select(.075,.045,ty==11);l.x+=sin(t*f-l.z*1.3)*a*k*k;}
+ else if(ty==12){if(aux>.005){let ph=atan2(p.y,p.x)*2.;l.x+=sin(t*1.3+aux*4.+ph)*.7*aux;l.y+=cos(t*1.05+aux*3.+ph)*.55*aux;}else if(l.z>.2){let k=1.+.05*sin(t*1.8);l=vec3f(l.x*k,l.y*k,l.z);}}
+ else if(ty==13){if(aux>.3){l.x+=sin(t*1.7)*.08*(l.y-.5);l.z+=cos(t*1.3)*.06*(l.y-.5);}l.x+=sin(t*2.+l.z*2.)*.03*(.2-l.z);}
+ else if(ty==9){l.z+=sin(t*1.5+l.y*2.)*.04;if(aux>.5){l.x+=sin(t*25.)*.05;}}
+ return l;
+}
+@vertex fn vs(i:MI)->MO{
+ var o:MO;let ty=i32(i.c.x+.5);let t=g.cam.w+i.b.z;
+ var l=anim(i.p,i.n.w,ty,t)*i.a.w;
+ var n=i.n.xyz;
+ l=rotZ(l,i.b.y);n=rotZ(n,i.b.y);
+ l=rotY(l,i.b.x);n=rotY(n,i.b.x);
+ let w=i.a.xyz+l;
+ o.cp=g.vp*vec4f(w,1.);o.wp=w;o.n=n;o.col=i.col.rgb;o.c=i.c;o.gl=i.b.w;o.op=i.p;
+ return o;
+}
+// decorative schools: orbit + tail wiggle on the GPU
+struct SI{@location(0)p:vec3f,@location(1)n:vec4f,@location(2)col:vec4f,@location(3)a:vec4f,@location(4)b:vec4f};
+@vertex fn vsSchool(i:SI)->MO{
+ var o:MO;let s=i.b.w;let h=vec3f(hs(s),hs(s+.37),hs(s+.71));let R=i.a.w;let t=g.cam.w;
+ let ta=t*i.b.x+i.b.y*6.3+(h.x-.5)*(18./R);
+ let P=i.a.xyz+vec3f(R*cos(ta),1.6*sin(3.*ta+i.b.y*17.),R*.6*sin(ta));
+ let T=normalize(vec3f(-R*sin(ta),4.8*cos(3.*ta+i.b.y*17.),R*.6*cos(ta)))*sign(i.b.x);
+ let S=normalize(cross(vec3f(0.,1.,0.),T));let Up=cross(T,S);
+ let off=S*((h.y-.5)*4.+sin(t*.6+s*40.)*.4)+Up*((h.z-.5)*2.4+cos(t*.5+s*31.)*.3);
+ var l=i.p*i.b.z*(.75+.5*h.z);
+ l.x+=sin(t*9.+s*50.+l.z*5.)*.16*(.3*i.b.z-l.z);
+ let w=P+off+S*l.x+Up*l.y+T*l.z;
+ o.cp=g.vp*vec4f(w,1.);o.wp=w;o.n=S*i.n.x+Up*i.n.y+T*i.n.z;o.col=mix(i.col.rgb,vec3f(1.,.85,.35),step(.88,fract(s*7.7))*.7);o.c=vec4f(1.,1.,1.,1.);o.gl=0.;o.op=i.p;
+ return o;
+}
+@fragment fn fs(i:MO,@builtin(front_facing)ff:bool)->@location(0)vec4f{
+ let ty=i32(i.c.x+.5);
+ var n=normalize(i.n);if(!ff){n=-n;}
+ let p=i.wp;let V=normalize(g.cam.xyz-p);
+ let A=tri(i.op*3.,n,.5);
+ var alb=i.col*i.c.yzw*(.8+.35*A.h);
+ let E=sunE(p);
+ let L=normalize(LSUN);
+ var c=alb*(E*(max(dot(n,L),0.)*.7+.2)*(1.+caus(p)*1.2*ss(0.,.8,n.y))+amb(p,n)+pointL(p,n));
+ let fr=pow(1.-max(dot(n,V),0.),3.);
+ c+=vec3f(.3,.6,.7)*fr*.15*exp(-dep(p)*.05);
+ if(ty==3){c+=i.c.yzw*(.35+.65*fr)*1.6*(.6+.4*sin(g.cam.w*3.+p.x));}
+ if(ty>=12){let br=max(i.col.r,max(i.col.g,i.col.b));c+=i.col*ss(.8,.98,br)*select(2.2,3.5,ty==14)*(.7+.3*sin(g.cam.w*2.3+i.op.z*1.7+i.op.x*3.));}
+ c+=i.c.yzw*i.gl;
+ return outc(fogc(c,p));
+}`;
+const BLADE_WGSL = COMMON + /* wgsl */`
+struct GI{@location(0)a:vec4f,@location(1)b:vec4f};
+struct GO{@builtin(position)cp:vec4f,@location(0)wp:vec3f,@location(1)n:vec3f,@location(2)uv:vec2f,@location(3)@interpolate(flat)sd:f32};
+@vertex fn vs(@builtin(vertex_index)vi:u32,i:GI)->GO{
+ var o:GO;let ROWS=8.;
+ let u=f32(vi&1u)*2.-1.;let v=f32(vi>>1u)/(ROWS-1.);
+ let base=i.a.xyz;let h=i.a.w;let yaw=i.b.x;let lean=i.b.y;let wd=i.b.z;let sd=i.b.w;
+ let kelp=sd>=2.;let t=g.cam.w;
+ let amp=select(.6,1.4,kelp);
+ let wv=(sin(t*.7+dot(base.xz,vec2f(.13,.09))+sd*6.)*.25+sin(t*1.3+sd*20.)*.08)*amp;
+ let dir=vec3f(cos(yaw),0.,sin(yaw));
+ let bv=dir*lean+vec3f(.6,0.,.8)*wv+vec3f(1e-4,0.,0.);
+ let bend=length(bv);let bd=bv/bend;
+ let side=normalize(cross(vec3f(0.,1.,0.),bd)+vec3f(0.,0.,1e-4));
+ let y=h*v*(1.-.2*bend*bend*v);
+ let c=base+vec3f(0.,y,0.)+bd*bend*h*v*v*.7;
+ let T=normalize(vec3f(0.,h,0.)+bd*bend*h*v*1.4);
+ var wid=wd*select(pow(1.-v,.7),(.7+.3*sin(v*18.+sd*9.))*(1.-v*.3),kelp);
+ let p=c+side*u*wid*.5+select(vec3f(0.),side*sin(v*9.+t+sd)*.15,kelp);
+ o.cp=g.vp*vec4f(p,1.);o.wp=p;o.n=normalize(cross(side,T)+side*u*.4);o.uv=vec2f(u,v);o.sd=sd;
+ return o;
+}
+@fragment fn fs(i:GO,@builtin(front_facing)ff:bool)->@location(0)vec4f{
+ var n=normalize(i.n);if(!ff){n=-n;}
+ let kelp=i.sd>=2.;let s=fract(i.sd);
+ var alb=mix(vec3f(.10,.22,.06),vec3f(.40,.55,.14),i.uv.y)*(.8+.4*fract(s*13.7));
+ if(kelp){alb=mix(vec3f(.16,.13,.03),vec3f(.48,.42,.10),i.uv.y*.7+.3*fract(s*7.));}
+ let p=i.wp;let E=sunE(p);let V=normalize(g.cam.xyz-p);
+ let back=pow(max(dot(-V,normalize(LSUN)),0.),3.);
+ var c=alb*(E*(abs(dot(n,normalize(LSUN)))*.5+.3+back*1.2)+amb(p,n)*mix(.4,1.,i.uv.y)+pointL(p,n));
+ c+=alb*E*caus(p)*.6;
+ return outc(fogc(c,p));
+}`;
+const FX_WGSL = COMMON + FULL + /* wgsl */`
+fn rayDir(fc:vec2f)->vec3f{let uv=fc*g.res.zw;let nd=vec2f(uv.x*2.-1.,1.-uv.y*2.);return normalize(g.fwd.xyz+g.right.xyz*nd.x*g.right.w+g.up.xyz*nd.y*g.up.w);}
+@fragment fn fsBg(@builtin(position)fc:vec4f)->@location(0)vec4f{let rd=rayDir(fc.xy);return outc(fogCol(dep(g.cam.xyz),rd.y));}
+struct PO{@builtin(position)cp:vec4f,@location(0)uv:vec2f,@location(1)col:vec3f};
+fn quad(vi:u32)->vec2f{return vec2f(f32(vi&1u),f32(vi>>1u))*2.-1.;}
+// marine snow wrapped around the camera
+@vertex fn vsSnow(@builtin(vertex_index)vi:u32,@location(0)a:vec4f)->PO{
+ var o:PO;let q=quad(vi);let t=g.cam.w;let B=26.;
+ var p=a.xyz*B+vec3f(t*.08,-t*.15,t*.05)+.4*vec3f(sin(t*.3+a.x*60.),sin(t*.21+a.y*50.),cos(t*.27+a.z*70.));
+ p=g.cam.xyz+(fract((p-g.cam.xyz)/B+.5)-.5)*B;
+ let d=distance(p,g.cam.xyz);let sz=.012+.03*a.w*a.w;
+ let w=p+(g.right.xyz*q.x+g.up.xyz*q.y)*max(sz,d*.0012);
+ o.cp=g.vp*vec4f(w,1.);o.uv=q;
+ o.col=(sunE(p)*.1+pointL(p,normalize(g.cam.xyz-p))*.6+vec3f(.01,.03,.04))*ss(B*.5,B*.3,d)*ss(.5,2.,d);
+ return o;
+}
+// current streaks inside the narrow gate (flowing toward -Z)
+@vertex fn vsStreak(@builtin(vertex_index)vi:u32,@location(0)a:vec4f)->PO{
+ var o:PO;let q=quad(vi);let t=g.cam.w;
+ let L=g.mis.w;
+ let z=g.res.x*0.+ 98.+fract(a.z-t*.45*(.7+.6*a.w))*22.;
+ let p=vec3f(a.x,a.y,z);
+ let dirZ=vec3f(0.,0.,1.);let side=normalize(cross(dirZ,normalize(g.cam.xyz-p)));
+ let w=p+dirZ*q.y*1.6+side*q.x*.04;
+ o.cp=g.vp*vec4f(w,1.);o.uv=q;
+ o.col=vec3f(.5,.9,1.)*.25*sunE(p).g*(1.-abs(q.y))*L;
+ return o;
+}
+// glowing halos (treasures, buoy, lights, bubbles)
+@vertex fn vsHalo(@builtin(vertex_index)vi:u32,@location(0)a:vec4f,@location(1)b:vec4f)->PO{
+ var o:PO;let q=quad(vi);
+ let w=a.xyz+(g.right.xyz*q.x+g.up.xyz*q.y)*a.w;
+ o.cp=g.vp*vec4f(w,1.);o.uv=q;o.col=b.rgb*b.a;return o;
+}
+@fragment fn fsGlow(i:PO)->@location(0)vec4f{let r=dot(i.uv,i.uv);return vec4f(i.col*exp(-r*4.)*(1.-ss(.7,1.,r)),0.);}
+@fragment fn fsStreak(i:PO)->@location(0)vec4f{return vec4f(i.col*(1.-abs(i.uv.x)),0.);}
+`;
+const DETAIL_WGSL = NOISE + FULL + /* wgsl */`
+fn hp(p:vec2f,per:f32)->f32{return h31(vec3f(p-per*floor(p/per),per));}
+fn tn(p:vec2f,per:f32)->f32{let i=floor(p);let f=fract(p);let u=f*f*(3.-2.*f);
+ return mix(mix(hp(i,per),hp(i+vec2f(1.,0.),per),u.x),mix(hp(i+vec2f(0.,1.),per),hp(i+vec2f(1.,1.),per),u.x),u.y);}
+fn tf(uv:vec2f,per:f32,n:i32)->f32{var a=.5;var s=0.;var pr=per;for(var i=0;i<n;i++){s+=a*tn(uv*pr+f32(i)*7.3,pr);pr*=2.;a*=.5;}return s/(1.-2.*a);}
+fn tw(p:vec2f,per:f32)->vec2f{let i=floor(p);let f=fract(p);var d=vec2f(9.);
+ for(var x=-1;x<=1;x++){for(var y=-1;y<=1;y++){let o=vec2f(f32(x),f32(y));let c=i+o;let cw=c-per*floor(c/per);
+  let r=o+h33(vec3f(cw,per)).xy-f;let l=dot(r,r);if(l<d.x){d.y=d.x;d.x=l;}else if(l<d.y){d.y=l;}}}return sqrt(d);}
+fn H(uv:vec2f)->f32{let wq=uv+.08*(vec2f(tf(uv,4.,4),tf(uv+.5,4.,4))-.5);let f=tf(wq,4.,7);let c=tw(wq*14.,14.);let crack=ss(.0,.06,c.y-c.x);let grain=tf(wq+2.1,64.,3);return f*.6+crack*.18+grain*.22;}
+@fragment fn fs(@builtin(position)fc:vec4f)->@location(0)vec4f{
+ let uv=fc.xy/1024.;let e=1./1024.;let h=H(uv);
+ let gx=H(uv+vec2f(e,0.))-H(uv-vec2f(e,0.));let gy=H(uv+vec2f(0.,e))-H(uv-vec2f(0.,e));
+ let s=clamp(vec2f(gx,gy)*1024.*.5*.06,vec2f(-1.),vec2f(1.));
+ return vec4f(-s*.5+.5,h,tf(uv+3.7,3.,5));
+}`;
+const POST_WGSL = FULL + /* wgsl */`
+@group(0)@binding(0)var t:texture_2d<f32>;@group(0)@binding(1)var s:sampler;
+fn uvOf(fc:vec4f,k:f32)->vec2f{return fc.xy*k/vec2f(textureDimensions(t));}
+@fragment fn fsMip(@builtin(position)fc:vec4f)->@location(0)vec4f{return textureSampleLevel(t,s,uvOf(fc,2.),0.);}
+fn kar(c:vec3f)->vec4f{let w=1./(1.+max(c.r,max(c.g,c.b)));return vec4f(c*w,w);}
+@fragment fn fsDown0(@builtin(position)fc:vec4f)->@location(0)vec4f{
+ let uv=uvOf(fc,2.);let e=1./vec2f(textureDimensions(t));
+ let m=kar(min(textureSampleLevel(t,s,uv+e*vec2f(-1.,-1.),0.).rgb,vec3f(30.)))+kar(min(textureSampleLevel(t,s,uv+e*vec2f(1.,-1.),0.).rgb,vec3f(30.)))
+      +kar(min(textureSampleLevel(t,s,uv+e*vec2f(-1.,1.),0.).rgb,vec3f(30.)))+kar(min(textureSampleLevel(t,s,uv+e*vec2f(1.,1.),0.).rgb,vec3f(30.)));
+ return vec4f(m.rgb/m.a,1.);}
+@fragment fn fsDown(@builtin(position)fc:vec4f)->@location(0)vec4f{let uv=uvOf(fc,2.);let e=1./vec2f(textureDimensions(t));
+ return(textureSampleLevel(t,s,uv+e*vec2f(-1.,-1.),0.)+textureSampleLevel(t,s,uv+e*vec2f(1.,-1.),0.)+textureSampleLevel(t,s,uv+e*vec2f(-1.,1.),0.)+textureSampleLevel(t,s,uv+e*vec2f(1.,1.),0.))*.25;}
+@fragment fn fsUp(@builtin(position)fc:vec4f)->@location(0)vec4f{let uv=uvOf(fc,.5);let e=.75/vec2f(textureDimensions(t));
+ return(textureSampleLevel(t,s,uv+e*vec2f(-1.,-1.),0.)+textureSampleLevel(t,s,uv+e*vec2f(1.,-1.),0.)+textureSampleLevel(t,s,uv+e*vec2f(-1.,1.),0.)+textureSampleLevel(t,s,uv+e*vec2f(1.,1.),0.))*.25;}
+`;
+const COMP_WGSL = FULL + /* wgsl */`
+@group(0)@binding(0)var<uniform>k:vec4f;@group(0)@binding(1)var sC:sampler;@group(0)@binding(2)var tS:texture_2d<f32>;@group(0)@binding(3)var tB:texture_2d<f32>;
+fn ign(p:vec2f)->f32{return fract(52.9829189*fract(dot(p,vec2f(.06711056,.00583715))));}
+fn aces(x:vec3f)->vec3f{return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),vec3f(0.),vec3f(1.));}
+@fragment fn fs(@builtin(position)fc:vec4f)->@location(0)vec4f{
+ let px=vec2i(fc.xy);let uv=fc.xy/vec2f(textureDimensions(tS));
+ var c=textureLoad(tS,px,0).rgb;let bl=textureSampleLevel(tB,sC,uv,0.).rgb;
+ c=mix(c,bl,.06)+bl*.05;c*=k.x;
+ c=mix(c,c*vec3f(1.6,.5,.5),k.y);
+ let q=uv-.5;c*=1.-dot(q,q)*(.7+k.y*.8);
+ c=aces(c);c=pow(max(c,vec3f(0.)),vec3f(1./2.2));
+ return vec4f(c+(ign(fc.xy)+ign(fc.xy+37.)-1.)/255.,1.);
+}`;
+
+// ================= pipelines =================
+const sRepeat = device.createSampler({ addressModeU: "repeat", addressModeV: "repeat", magFilter: "linear", minFilter: "linear", mipmapFilter: "linear", maxAnisotropy: 8 });
+const sClamp = device.createSampler({ magFilter: "linear", minFilter: "linear" });
+const ADD = { color: { srcFactor: "one", dstFactor: "one" }, alpha: { srcFactor: "one", dstFactor: "one" } };
+const VF = GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT;
+const BGL = device.createBindGroupLayout({ entries: [{ binding: 0, visibility: VF, buffer: {} }, { binding: 1, visibility: VF, sampler: {} }, { binding: 2, visibility: VF, texture: {} }] });
+const layout = device.createPipelineLayout({ bindGroupLayouts: [BGL] });
+const A_ = (l, o, f) => ({ shaderLocation: l, offset: o, format: f });
+const VB_T = { arrayStride: 16, attributes: [A_(0, 0, "float32x3"), A_(1, 12, "snorm8x4")] };
+const VB_M = { arrayStride: 20, attributes: [A_(0, 0, "float32x3"), A_(1, 12, "snorm8x4"), A_(2, 16, "unorm8x4")] };
+const VB_I = { arrayStride: 48, stepMode: "instance", attributes: [A_(3, 0, "float32x4"), A_(4, 16, "float32x4"), A_(5, 32, "float32x4")] };
+const VB_S = { arrayStride: 32, stepMode: "instance", attributes: [A_(3, 0, "float32x4"), A_(4, 16, "float32x4")] };
+const VB_G = { arrayStride: 32, stepMode: "instance", attributes: [A_(0, 0, "float32x4"), A_(1, 16, "float32x4")] };
+const VB_P = { arrayStride: 16, stepMode: "instance", attributes: [A_(0, 0, "float32x4")] };
+const VB_H = { arrayStride: 32, stepMode: "instance", attributes: [A_(0, 0, "float32x4"), A_(1, 16, "float32x4")] };
+const pipe = (module, vs, fs, buffers, o = {}) => device.createRenderPipeline({ layout,
+  vertex: { module, entryPoint: vs, buffers }, fragment: { module, entryPoint: fs, targets: [{ format: HDR, blend: o.blend }] },
+  primitive: { topology: o.strip ? "triangle-strip" : "triangle-list", cullMode: "none" },
+  depthStencil: { format: DEPTH, depthWriteEnabled: !o.blend && !o.noWrite, depthCompare: o.cmp || "greater" }, multisample: { count: MS } });
+const mT = mod(TERRAIN_WGSL), mM = mod(MESH_WGSL), mB = mod(BLADE_WGSL), mF = mod(FX_WGSL), mP = mod(POST_WGSL), mC = mod(COMP_WGSL);
+const pTerrain = pipe(mT, "vs", "fs", [VB_T]), pMesh = pipe(mM, "vs", "fs", [VB_M, VB_I]), pSchool = pipe(mM, "vsSchool", "fs", [VB_M, VB_S]);
+const pBlade = pipe(mB, "vs", "fs", [VB_G], { strip: true }), pBg = pipe(mF, "vsFull", "fsBg", [], { cmp: "equal", noWrite: true });
+const pSnow = pipe(mF, "vsSnow", "fsGlow", [VB_P], { strip: true, blend: ADD }), pStreak = pipe(mF, "vsStreak", "fsStreak", [VB_P], { strip: true, blend: ADD }), pHalo = pipe(mF, "vsHalo", "fsGlow", [VB_H], { strip: true, blend: ADD });
+const postBGL = device.createBindGroupLayout({ entries: [{ binding: 0, visibility: GPUShaderStage.FRAGMENT, texture: {} }, { binding: 1, visibility: GPUShaderStage.FRAGMENT, sampler: {} }] });
+const postLayout = device.createPipelineLayout({ bindGroupLayouts: [postBGL] });
+const pp = (fs, format, add) => device.createRenderPipeline({ layout: postLayout, vertex: { module: mP, entryPoint: "vsFull" }, fragment: { module: mP, entryPoint: fs, targets: [{ format, blend: add ? ADD : undefined }] } });
+const pMip8 = pp("fsMip", "rgba8unorm"), pDown0 = pp("fsDown0", HDR), pDown = pp("fsDown", HDR), pUp = pp("fsUp", HDR, true);
+const postBG = v => device.createBindGroup({ layout: postBGL, entries: [{ binding: 0, resource: v }, { binding: 1, resource: sClamp }] });
+const pComp = device.createRenderPipeline({ layout: "auto", vertex: { module: mC, entryPoint: "vsFull" }, fragment: { module: mC, entryPoint: "fs", targets: [{ format: canvasFormat }] } });
+const colorAtt = (view, clear) => ({ view, loadOp: clear ? "clear" : "load", storeOp: "store", clearValue: [0, 0, 0, 0] });
+const detailTex = tex(1024, 1024, "rgba8unorm", TU.RENDER_ATTACHMENT | TU.TEXTURE_BINDING, { mips: 11 });
+{
+  const m = mod(DETAIL_WGSL), p = device.createRenderPipeline({ layout: "auto", vertex: { module: m, entryPoint: "vsFull" }, fragment: { module: m, entryPoint: "fs", targets: [{ format: "rgba8unorm" }] } });
+  const enc = device.createCommandEncoder();
+  let r = enc.beginRenderPass({ colorAttachments: [colorAtt(detailTex.createView({ baseMipLevel: 0, mipLevelCount: 1 }), true)] }); r.setPipeline(p); r.draw(3); r.end();
+  for (let k = 1; k < 11; k++) { r = enc.beginRenderPass({ colorAttachments: [colorAtt(detailTex.createView({ baseMipLevel: k, mipLevelCount: 1 }), true)] }); r.setPipeline(pMip8); r.setBindGroup(0, postBG(detailTex.createView({ baseMipLevel: k - 1, mipLevelCount: 1 }))); r.draw(3); r.end() }
+  queue.submit([enc.finish()]);
+}
+const U = new Float32Array(104), gU = device.createBuffer({ size: 416, usage: BU.UNIFORM | BU.COPY_DST });
+const bg = device.createBindGroup({ layout: BGL, entries: [{ binding: 0, resource: { buffer: gU } }, { binding: 1, resource: sRepeat }, { binding: 2, resource: detailTex.createView() }] });
+const compU = device.createBuffer({ size: 16, usage: BU.UNIFORM | BU.COPY_DST });
+
+// ================= procedural models =================
+class Mdl {
+  constructor() { this.p = []; this.i = []; this.a = []; this.c = [] }
+  v(x, y, z, a = 0, c = [1, 1, 1]) { this.p.push(x, y, z); this.a.push(a); this.c.push(...c); return this.p.length / 3 - 1 }
+  tri(a, b, c) { this.i.push(a, b, c) }
+  quad(a, b, c, d) { this.i.push(a, b, c, a, c, d) }
+  ico(sub, f, aux = 0, col = [1, 1, 1]) {
+    const t = (1 + sqrt(5)) / 2;
+    let V = [[-1, t, 0], [1, t, 0], [-1, -t, 0], [1, -t, 0], [0, -1, t], [0, 1, t], [0, -1, -t], [0, 1, -t], [t, 0, -1], [t, 0, 1], [-t, 0, -1], [-t, 0, 1]].map(norm);
+    let F = [[0, 11, 5], [0, 5, 1], [0, 1, 7], [0, 7, 10], [0, 10, 11], [1, 5, 9], [5, 11, 4], [11, 10, 2], [10, 7, 6], [7, 1, 8], [3, 9, 4], [3, 4, 2], [3, 2, 6], [3, 6, 8], [3, 8, 9], [4, 9, 5], [2, 4, 11], [6, 2, 10], [8, 6, 7], [9, 8, 1]];
+    for (let s = 0; s < sub; s++) { const mid = new Map(), NF = []; const m = (a, b) => { const k = a < b ? a * 65536 + b : b * 65536 + a; let r = mid.get(k); if (r === undefined) { V.push(norm([0, 1, 2].map(c => V[a][c] + V[b][c]))); r = V.length - 1; mid.set(k, r) } return r };
+      for (const [a, b, c] of F) { const ab = m(a, b), bc = m(b, c), ca = m(c, a); NF.push([a, ab, ca], [b, bc, ab], [c, ca, bc], [ab, bc, ca]) } F = NF }
+    const base = this.p.length / 3;
+    for (const v of V) { const q = f(v[0], v[1], v[2]); this.v(q[0], q[1], q[2], typeof aux === "function" ? aux(q, v) : aux, typeof col === "function" ? col(q, v) : col) }
+    for (const [a, b, c] of F) this.tri(base + a, base + b, base + c);
+  }
+  tube(path, rad, sides, aux = 0, col = [1, 1, 1], cap = true) {
+    const rings = []; let n = [.31, .9, .3];
+    for (let k = 0; k < path.length; k++) {
+      const p = path[k], a = path[max(k - 1, 0)], b = path[min(k + 1, path.length - 1)];
+      const T = norm([b[0] - a[0], b[1] - a[1], b[2] - a[2]]);
+      let S = norm([n[1] * T[2] - n[2] * T[1], n[2] * T[0] - n[0] * T[2], n[0] * T[1] - n[1] * T[0]]);
+      n = [T[1] * S[2] - T[2] * S[1], T[2] * S[0] - T[0] * S[2], T[0] * S[1] - T[1] * S[0]];
+      const r = typeof rad === "function" ? rad(k) : rad, ring = [], ax = typeof aux === "function" ? aux(k) : aux, cc = typeof col === "function" ? col(k) : col;
+      for (let s = 0; s < sides; s++) { const ang = s / sides * TAU, c = cos(ang), si = sin(ang); ring.push(this.v(p[0] + (S[0] * c + n[0] * si) * r, p[1] + (S[1] * c + n[1] * si) * r, p[2] + (S[2] * c + n[2] * si) * r, ax, cc)) }
+      rings.push(ring);
+    }
+    for (let k = 0; k < rings.length - 1; k++) for (let s = 0; s < sides; s++) { const t = (s + 1) % sides; this.quad(rings[k][s], rings[k][t], rings[k + 1][t], rings[k + 1][s]) }
+    if (cap) { const e = path[path.length - 1], last = rings[rings.length - 1], tip = this.v(e[0], e[1], e[2], typeof aux === "function" ? aux(path.length - 1) : aux, typeof col === "function" ? col(path.length - 1) : col); for (let s = 0; s < sides; s++) this.tri(last[s], last[(s + 1) % sides], tip) }
+  }
+  box(cx, cy, cz, sx, sy, sz, col, aux = 0) {
+    const P = [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]];
+    for (const f of [[0, 3, 2, 1], [4, 5, 6, 7], [0, 1, 5, 4], [3, 7, 6, 2], [0, 4, 7, 3], [1, 2, 6, 5]]) {
+      const ids = f.map(k => this.v(cx + P[k][0] * sx, cy + P[k][1] * sy, cz + P[k][2] * sz, aux, col)); this.quad(...ids);
+    }
+  }
+  build() {
+    const nv = this.p.length / 3, p = this.p, nrm = new Float32Array(nv * 3);
+    for (let f = 0; f < this.i.length; f += 3) {
+      const a = this.i[f] * 3, b = this.i[f + 1] * 3, c = this.i[f + 2] * 3;
+      const ux = p[b] - p[a], uy = p[b + 1] - p[a + 1], uz = p[b + 2] - p[a + 2], vx = p[c] - p[a], vy = p[c + 1] - p[a + 1], vz = p[c + 2] - p[a + 2];
+      const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+      for (const o of [a, b, c]) { nrm[o] += nx; nrm[o + 1] += ny; nrm[o + 2] += nz }
+    }
+    const vb = new ArrayBuffer(nv * 20), vf = new Float32Array(vb), vi = new Int8Array(vb), vu = new Uint8Array(vb);
+    for (let k = 0; k < nv; k++) {
+      const l = hypot(nrm[k * 3], nrm[k * 3 + 1], nrm[k * 3 + 2]) || 1;
+      vf[k * 5] = p[k * 3]; vf[k * 5 + 1] = p[k * 3 + 1]; vf[k * 5 + 2] = p[k * 3 + 2];
+      vi[k * 20 + 12] = round(nrm[k * 3] / l * 127); vi[k * 20 + 13] = round(nrm[k * 3 + 1] / l * 127); vi[k * 20 + 14] = round(nrm[k * 3 + 2] / l * 127); vi[k * 20 + 15] = round(clamp(this.a[k], -1, 1) * 127);
+      for (let j = 0; j < 3; j++) vu[k * 20 + 16 + j] = round(clamp(this.c[k * 3 + j], 0, 1) * 255); vu[k * 20 + 19] = 255;
+    }
+    return { vb, ib: new Uint32Array(this.i), nv };
+  }
+}
+function mkFish() {
+  const m = new Mdl(), Z = [.5, .3, .05, -.22, -.34], Hh = [.01, .13, .17, .09, .035], Ww = [.01, .05, .065, .03, .012], rings = [];
+  for (let f = 0; f < 5; f++) { const r = []; for (let k = 0; k < 8; k++) { const h = k / 8 * TAU, y = sin(h) * Hh[f]; r.push(m.v(cos(h) * Ww[f], y, Z[f], 0, y > 0 ? [.18, .30, .50] : [.85, .9, .95])) } rings.push(r) }
+  for (let f = 0; f < 4; f++) for (let k = 0; k < 8; k++) { const x = (k + 1) % 8; m.quad(rings[f][k], rings[f + 1][k], rings[f + 1][x], rings[f][x]) }
+  const c = [.3, .45, .7], a = m.v(0, 0, -.33, 0, c), b = m.v(0, .2, -.56, 0, c), d = m.v(0, 0, -.47, 0, c), e = m.v(0, -.2, -.56, 0, c); m.tri(a, b, d); m.tri(a, d, e);
+  return m;
+}
+function mkManta() {
+  const m = new Mdl(), e = 48, c = 14, r = [];
+  for (let s = 0; s <= e; s++) {
+    const n = s / e * 2 - 1, u = abs(n);
+    let f = .52 - .74 * pow(u, 1.35) + .07 * exp(-pow((u - .13) / .05, 2)) - .08 * pow(u, 5);
+    const mm = -.5 + .3 * pow(u, .8) + .02 - .08 * pow(u, 5); if (f < mm + .004) f = mm + .004;
+    const x = .08 * pow(1 - u, 1.15) + .004 + .12 * exp(-pow(n / .2, 2)), ring = [];
+    for (let k = 0; k < c; k++) { const E = k / c * TAU, y = x * sin(E) * (.62 + .38 * cos(E)); ring.push(m.v(n, y, lerp(mm, f, .5 + .5 * cos(E)), n, y > 0 ? [.10, .13, .20] : [.85, .88, .92])) }
+    r.push(ring);
+  }
+  for (let s = 0; s < e; s++) for (let k = 0; k < c; k++) { const u = (k + 1) % c; m.quad(r[s][k], r[s + 1][k], r[s + 1][u], r[s][u]) }
+  const tail = []; for (let s = 0; s <= 8; s++) tail.push([0, 0, -.42 - s * .19]); m.tube(tail, s => .016 * (1 - s / 9), 4, 0, [.1, .12, .18]);
+  for (const sd of [-1, 1]) m.tube([[sd * .12, -.02, .48], [sd * .135, -.05, .6], [sd * .115, -.09, .69]], u => .04 * (1 - u / 4), 5, sd * .1, [.1, .12, .18]);
+  return m;
+}
+function mkJelly() {
+  const m = new Mdl(), prof = [[0, .5], [.25, .48], [.45, .36], [.56, .18], [.6, 0], [.52, -.06]], rings = [], col = [.85, .6, .95];
+  for (const [r, y] of prof) { const ring = []; for (let k = 0; k < 16; k++) { const a = k / 16 * TAU; ring.push(m.v(cos(a) * r, y, sin(a) * r, 0, col)) } rings.push(ring) }
+  for (let j = 0; j < prof.length - 1; j++) for (let k = 0; k < 16; k++) { const n = (k + 1) % 16; m.quad(rings[j][k], rings[j][n], rings[j + 1][n], rings[j + 1][k]) }
+  for (let k = 0; k < 8; k++) { const a = k / 8 * TAU, path = []; for (let s = 0; s <= 6; s++) path.push([cos(a) * .5, -.04 - s * .22, sin(a) * .5]); m.tube(path, .018, 3, s => s / 6, [.9, .7, 1]) }
+  for (let k = 0; k < 4; k++) { const a = k / 4 * TAU + .4, path = []; for (let s = 0; s <= 4; s++) path.push([cos(a) * .08, -.02 - s * .16, sin(a) * .08]); m.tube(path, .05, 4, s => s / 8, [1, .8, .95]) }
+  return m;
+}
+function mkCrab() {
+  const m = new Mdl(), red = [.92, .32, .16], dk = [.6, .18, .1];
+  m.ico(2, (x, y, z) => [x * .62, y * .26 + (y > 0 ? .04 : 0), z * .48], 0, (q) => q[1] > .1 ? red : dk);
+  for (const sd of [-1, 1]) {
+    m.tube([[sd * .45, 0, .25], [sd * .65, .05, .45], [sd * .55, .1, .7]], .07, 5, 0, red);
+    m.ico(1, (x, y, z) => [sd * .5 + x * .2, .1 + y * .12, .78 + z * .16], 0, red);
+    for (let k = 0; k < 3; k++) { const z = .15 - k * .22; m.tube([[sd * .5, 0, z], [sd * .85, .12, z - .05], [sd * 1.05, -.22, z - .1]], .04, 4, sd * (k + 1) / 4, dk) }
+    m.tube([[sd * .12, .2, .4], [sd * .14, .38, .45]], .03, 4, 0, dk); m.ico(0, (x, y, z) => [sd * .14 + x * .06, .4 + y * .06, .46 + z * .06], 0, [.05, .05, .05]);
+  }
+  return m;
+}
+function mkClam() {
+  const m = new Mdl(), sh = [.92, .86, .74];
+  const shell = top => m.ico(2, (x, y, z) => { const ridge = 1 + .06 * sin(atan2(x, z + .6) * 16); const yy = top ? max(y, 0) * .32 : min(y, 0) * .28; return [x * .62 * ridge, yy + (top ? .015 : 0), z * .5 * ridge] }, top ? 1 : 0, (q) => [sh[0] * (.85 + .15 * sin(q[0] * 30)), sh[1] * (.85 + .15 * sin(q[0] * 30)), sh[2]]);
+  shell(false); shell(true);
+  m.ico(1, (x, y, z) => [x * .11, .06 + y * .11, .08 + z * .11], .5, [1, .97, .9]);
+  return m;
+}
+function mkDiver() {
+  const m = new Mdl(), suit = [.08, .12, .18], acc = [1, .78, .15], skin = [.85, .7, .55];
+  m.tube([[0, 0, -.45], [0, .02, 0], [0, 0, .45]], k => [.22, .25, .2][k], 8, 0, suit);
+  m.ico(1, (x, y, z) => [x * .17, .06 + y * .17, .62 + z * .17], 0, skin);
+  m.box(0, .11, .74, .14, .07, .04, [.6, .9, 1]);
+  m.tube([[0, .26, -.3], [0, .27, .25]], .12, 8, 0, acc);
+  for (const sd of [-1, 1]) {
+    m.tube([[sd * .11, 0, -.45], [sd * .13, -.02, -.85], [sd * .14, -.04, -1.15]], .08, 6, sd * .6, suit);
+    const a = m.v(sd * .05, -.04, -1.15, sd, acc), b = m.v(sd * .24, -.04, -1.15, sd, acc), c = m.v(sd * .3, -.04, -1.55, sd, acc), d = m.v(sd * 0, -.04, -1.55, sd, acc); m.quad(a, b, c, d);
+    m.tube([[sd * .2, .05, .35], [sd * .3, -.05, .65], [sd * .25, -.1, .9]], .06, 5, 0, suit);
+  }
+  return m;
+}
+function mkRock(s, cuts = 4) {
+  seed(500 + s); const m = new Mdl(), C = [];
+  for (let k = 0; k < cuts; k++) C.push([...norm([rb(-1, 1), rb(-1, 1), rb(-1, 1)]), rb(.72, .95)]);
+  m.ico(2, (x, y, z) => { const r = 1 + (fbm(x * 1.4 + s, y * 1.4, z * 1.4) - .5) * .7; let X = x * r, Y = y * r * .75, Z = z * r; for (const c of C) { const h = X * c[0] + Y * c[1] + Z * c[2] - c[3]; if (h > 0) { X -= c[0] * h; Y -= c[1] * h; Z -= c[2] * h } } return [X, Y, Z] }, 0, [.5, .47, .44]);
+  return m;
+}
+function mkCoralBlob(s) { seed(600 + s); const m = new Mdl(); m.ico(2, (x, y, z) => { const r = 1 + (fbm(x * 2.5 + s, y * 2.5, z * 2.5) - .5) * .9 + .12 * sin(x * 14) * sin(z * 14); return [x * r, max(y * r * .75, -.2), z * r] }, 0, [1, 1, 1]); return m }
+function mkCoralBranch(s) {
+  seed(700 + s); const m = new Mdl();
+  const br = (p, d, len, rad, depth) => { const pts = [p]; let h = p; for (let k = 0; k < 3; k++) { d = norm([d[0] + rb(-.3, .3), d[1] + rb(0, .3), d[2] + rb(-.3, .3)]); h = [h[0] + d[0] * len / 3, h[1] + d[1] * len / 3, h[2] + d[2] * len / 3]; pts.push(h) } m.tube(pts, k => rad * (1 - .2 * k), 5, 0, [1, 1, 1]); if (depth > 0) for (let c = 0; c < 2 + (rand() < .5); c++) br(h, norm([d[0] + rb(-.9, .9), d[1] + rb(0, .5), d[2] + rb(-.9, .9)]), len * .72, rad * .7, depth - 1) };
+  for (let k = 0; k < 2; k++) br([rb(-.1, .1), 0, rb(-.1, .1)], norm([rb(-.4, .4), 1, rb(-.4, .4)]), rb(.6, .9), .07, 3);
+  return m;
+}
+function mkShell() { const m = new Mdl(); m.ico(1, (x, y, z) => { const k = .5 + .5 * y; return [x * .25 * (1.1 - k * .6), y * .3 + .1, z * .25 * (1.1 - k * .6)] }, 0, [1, .85, .55]); return m }
+function mkChest() { const m = new Mdl(), w = [.42, .26, .14], gold = [1, .8, .3]; m.box(0, .3, 0, .7, .3, .45, w); m.box(0, .72, -.05, .72, .12, .47, w); m.box(0, .45, .46, .12, .12, .02, gold); m.box(0, .3, 0, .72, .04, .47, gold); return m }
+function mkLog() { const m = new Mdl(); m.box(0, .08, 0, .35, .08, .45, [.25, .45, .75]); m.box(0, .17, 0, .33, .01, .43, [.95, .92, .8]); return m }
+function mkWreck() {
+  seed(77); const m = new Mdl(), wood = [.32, .22, .14], dk = [.18, .13, .1];
+  m.tube([[0, .3, -8], [0, .2, 0], [0, .5, 8]], .35, 6, 0, dk);
+  for (let z = -7; z <= 7; z += 1.2) {
+    if (rand() < .15) continue; const pts = [], R = 3.2 * (1 - pow(abs(z) / 9, 2) * .6), broken = z > 2 && rand() < .5;
+    for (let k = 0; k <= 10; k++) { const a = -PI / 2 - (PI / 2 + .25) + k / 10 * (PI + .5); if (broken && k > 6) break; pts.push([cos(a) * R, 3 + sin(a) * R * .95, z]) }
+    m.tube(pts, .16, 5, 0, wood, false);
+  }
+  for (const sd of [-1, 1]) for (let h = 0; h < 4; h++) { if (rand() < .25) continue; const a = -PI / 2 + sd * (.5 + h * .3); m.box(sd * cos(-PI / 2 + h * .3) * 2.6 * sd * sd, 3 + sin(a) * 2.8, rb(-2, 1), .08, .25, rb(4, 6.5), wood) }
+  m.tube([[0, .5, 1.5], [.4, 4, 1.2], [1.2, 7.5, .5]], k => .25 - k * .05, 6, 0, dk);
+  return m;
+}
+function mkBuoy() { const m = new Mdl(); m.tube([[0, 0, 0], [0, 40, 0]], .06, 5, 0, [1, .85, .3], false); m.ico(2, (x, y, z) => [x * .5, 1.2 + y * .5, z * .5], 0, [1, .55, .2]); return m }
+function mkTurtle() {
+  const m = new Mdl(), sh = [.36, .45, .22], bl = [.85, .8, .6], sk = [.5, .58, .42];
+  m.ico(2, (x, y, z) => [x * .75, y > 0 ? y * .34 : y * .1, z * .92], 0, (q, v) => q[1] > .02 ? sh.map((c, i) => c * (.75 + .3 * (sin(v[0] * 11) * sin(v[2] * 9) > 0 ? 1 : .6))) : bl);
+  m.ico(1, (x, y, z) => [x * .2, .05 + y * .17, 1.02 + z * .22], 0, sk);
+  for (const sd of [-1, 1]) {
+    const a = m.v(sd * .55, 0, .45, sd, sk), b = m.v(sd * 1.35, -.02, .15, sd, sk), c = m.v(sd * 1.25, -.02, -.1, sd, sk), d = m.v(sd * .55, 0, .15, sd, sk); m.quad(a, b, c, d); m.quad(d, c, b, a);
+    const e = m.v(sd * .45, 0, -.6, sd * .5, sk), f = m.v(sd * .8, -.02, -.85, sd * .5, sk), g = m.v(sd * .5, -.02, -.95, sd * .5, sk); m.tri(e, f, g); m.tri(g, f, e);
+  }
+  return m;
+}
+function mkPuffer() {
+  const m = new Mdl(), y = [.86, .76, .42], w = [.95, .93, .85];
+  m.ico(2, (x, yy, z) => [x * .45, yy * .4, z * .5], 0, (q, v) => v[1] < -.2 ? w : (sin(v[0] * 13) * sin(v[2] * 13) > .5 ? [.35, .3, .2] : y));
+  seed(42); for (let k = 0; k < 34; k++) { const d = norm([rb(-1, 1), rb(-1, 1), rb(-1, 1)]); m.tube([[d[0] * .42, d[1] * .37, d[2] * .47], [d[0] * .62, d[1] * .55, d[2] * .67]], .02, 3, 1, y) }
+  for (const sd of [-1, 1]) m.ico(0, (x, yy, z) => [sd * .2 + x * .07, .14 + yy * .07, .38 + z * .07], 0, [.05, .05, .05]);
+  const a = m.v(0, 0, -.45, 0, y), b = m.v(0, .2, -.7, 0, y), c = m.v(0, -.2, -.7, 0, y); m.tri(a, b, c); m.tri(c, b, a);
+  return m;
+}
+function mkSeahorse() {
+  const m = new Mdl(), c = [1, .78, .25], pts = [];
+  for (let k = 0; k <= 10; k++) { const a = k / 10 * 4.2; pts.push([0, -1.1 + k * .08 - .18 * sin(a) * (1 - k / 10), .12 * cos(a) * (1 - k / 10) - .05]) }
+  m.tube([[0, -1.1, -.05], [0, -.9, .05], [0, -.6, .08], [0, -.2, .04], [0, .2, .02], [0, .45, .08]], k => [.03, .07, .12, .14, .12, .1][k], 7, 0, c);
+  m.tube([[0, -1.1, -.05], [0, -1.25, .05], [0, -1.3, .15], [0, -1.22, .2]], k => .03 - k * .006, 5, 0, c);
+  m.tube([[0, .45, .1], [0, .5, .25], [0, .47, .42]], k => .06 - k * .015, 6, 0, c);
+  const a = m.v(0, -.1, -.08, 1, [1, .9, .5]), b = m.v(0, .15, -.22, 1, [1, .9, .5]), d = m.v(0, -.3, -.2, 1, [1, .9, .5]); m.tri(a, b, d); m.tri(d, b, a);
+  return m;
+}
+function mkFishBanded(Z, Hh, Ww, colFn, tail) {
+  const m = new Mdl(), rings = [], seg = 8;
+  for (let f = 0; f < Z.length; f++) { const r = []; for (let k = 0; k < seg; k++) { const h = k / seg * TAU, y = sin(h) * Hh[f]; r.push(m.v(cos(h) * Ww[f], y, Z[f], 0, colFn(Z[f], y))) } rings.push(r) }
+  for (let f = 0; f < Z.length - 1; f++) for (let k = 0; k < seg; k++) { const x = (k + 1) % seg; m.quad(rings[f][k], rings[f + 1][k], rings[f + 1][x], rings[f][x]) }
+  for (const t of tail) { const ids = t.map(p => m.v(p[0], p[1], p[2], 0, colFn(p[2], p[1]))); m.tri(ids[0], ids[1], ids[2]); m.tri(ids[2], ids[1], ids[0]) }
+  return m;
+}
+const mkClown = () => mkFishBanded([.42, .3, .1, -.1, -.26, -.34], [.02, .14, .2, .18, .1, .05], [.02, .07, .09, .08, .05, .02],
+  (z, y) => (abs(z - .22) < .04 || abs(z + .02) < .045 || abs(z + .25) < .03) ? [.97, .97, .95] : (abs(z - .22) < .065 || abs(z + .02) < .07) ? [.05, .05, .05] : [1, .45, .08],
+  [[[0, 0, -.3], [0, .17, -.5], [0, -.17, -.5]], [[0, .18, .1], [0, .3, -.05], [0, .18, -.2]]]);
+const mkSharkOld = () => mkFishBanded([1.3, 1.0, .5, 0, -.6, -1.1, -1.45], [.04, .2, .34, .36, .25, .1, .04], [.05, .2, .3, .3, .2, .08, .03],
+  (z, y) => y > -.05 ? [.32, .37, .42] : [.88, .9, .92],
+  [[[0, .3, .2], [0, .85, -.25], [0, .3, -.45]], [[0, 0, -1.35], [0, .7, -1.85], [0, 0, -1.7]], [[0, 0, -1.35], [0, -.4, -1.75], [0, 0, -1.6]], [[.25, -.15, .35], [.85, -.35, -.05], [.25, -.15, .0]], [[-.25, -.15, .35], [-.85, -.35, -.05], [-.25, -.15, .0]]]);
+function mkShark() {
+  const m = new Mdl(), Z = [1.55, 1.4, 1.15, .75, .25, -.35, -.95, -1.4, -1.68], H = [0, .1, .22, .33, .37, .31, .18, .08, .05], W = [0, .12, .23, .3, .31, .24, .13, .055, .03], seg = 14, rings = [];
+  const top = [.27, .31, .36], belly = [.9, .9, .88];
+  for (let f = 0; f < Z.length; f++) { const r = []; for (let k = 0; k < seg; k++) { const a = k / seg * TAU, y = sin(a) * H[f] - (f < 3 ? .04 * (3 - f) / 3 : 0); r.push(m.v(cos(a) * W[f], y, Z[f], 0, sin(a) > -.25 ? top : belly)) } rings.push(r) }
+  for (let f = 0; f < Z.length - 1; f++) for (let k = 0; k < seg; k++) { const x = (k + 1) % seg; m.quad(rings[f][k], rings[f + 1][k], rings[f + 1][x], rings[f][x]) }
+  const fin = (pts, col) => { const ids = pts.map(p => m.v(p[0], p[1], p[2], 0, col)); for (let k = 1; k < ids.length - 1; k++) { m.tri(ids[0], ids[k], ids[k + 1]); m.tri(ids[k + 1], ids[k], ids[0]) } };
+  fin([[0, .34, .35], [0, .95, -.05], [0, .82, -.2], [0, .3, -.45]], top);
+  fin([[0, .05, -1.6], [0, .95, -2.25], [0, .8, -2.2], [0, .1, -1.85]], top);
+  fin([[0, -.02, -1.6], [0, -.55, -2.05], [0, -.45, -2.05], [0, -.05, -1.8]], top);
+  for (const sd of [-1, 1]) { fin([[sd * .26, -.18, .5], [sd * .95, -.5, -.1], [sd * .85, -.48, -.25], [sd * .24, -.18, .05]], top); m.ico(1, (x, y, z) => [sd * .2 + x * .045, .1 + y * .045, 1.12 + z * .045], 0, [.02, .02, .02]); for (let g = 0; g < 4; g++) fin([[sd * .27, .12, .62 - g * .08], [sd * .28, -.08, .6 - g * .08], [sd * .28, -.08, .59 - g * .08], [sd * .27, .12, .61 - g * .08]], [.12, .14, .16]) }
+  fin([[0, -.12, 1.42], [.12, -.16, 1.25], [-.12, -.16, 1.25]], [.15, .1, .1]);
+  return m;
+}
+function mkSquid() {
+  const m = new Mdl(), skin = [.42, .1, .16], spot = [1, .35, .85], dark = [.2, .05, .08];
+  const mantle = []; for (let k = 0; k <= 10; k++) { const z = k / 10 * 5.2; mantle.push([0, 0, z]) }
+  m.tube(mantle, k => .95 * pow(1 - k / 10, .7) + .05, 14, 0, k => k % 3 === 1 ? spot : skin);
+  for (const sd of [-1, 1]) { const a = m.v(sd * .1, 0, 3.6, 0, skin), b = m.v(sd * 1.6, 0, 4.6, 0, skin), c = m.v(sd * .1, 0, 5.3, 0, skin); m.tri(a, b, c); m.tri(c, b, a) }
+  m.ico(2, (x, y, z) => [x * .85, y * .8, -.3 + z * .7], 0, skin);
+  for (const sd of [-1, 1]) { m.ico(1, (x, y, z) => [sd * .72 + x * .3, .1 + y * .3, -.3 + z * .3], 0, [.85, 1, 1]); m.ico(1, (x, y, z) => [sd * .86 + x * .16, .1 + y * .16, -.32 + z * .16], 0, [.02, .02, .05]) }
+  for (let k = 0; k < 8; k++) { const a = k / 8 * TAU, pts = []; for (let s = 0; s <= 8; s++) { const t = s / 8; pts.push([cos(a) * (.45 + t * .9), sin(a) * (.45 + t * .9), -.8 - t * 4.6]) } m.tube(pts, s => .22 * (1 - s / 9) + .02, 6, s => s / 8 + .01, s => s % 3 === 2 ? spot : skin) }
+  for (const sd of [-1, 1]) { const pts = []; for (let s = 0; s <= 12; s++) { const t = s / 12; pts.push([sd * (.3 + t * .5), -.2, -.8 - t * 9]) } m.tube(pts, s => s > 10 ? .22 : .07, 5, s => s / 12 + .01, s => s > 10 ? spot : skin); }
+  return m;
+}
+function mkAngler() {
+  const m = new Mdl(), skin = [.16, .12, .12];
+  m.ico(2, (x, y, z) => [x * .7, y * .62, z * .78], 0, skin);
+  for (let k = 0; k < 9; k++) { const x = -.42 + k * .105; m.tube([[x, -.2, .62], [x * 1.05, -.02, .74]], .018, 3, 0, [.95, .95, .9]) }
+  for (let k = 0; k < 7; k++) { const x = -.32 + k * .105; m.tube([[x, .12, .66], [x * 1.05, -.06, .72]], .015, 3, 0, [.95, .95, .9]) }
+  m.tube([[0, .55, .3], [0, .95, .55], [0, 1.0, .95], [0, .85, 1.2]], .025, 4, .6, [.3, .25, .2]);
+  m.ico(1, (x, y, z) => [x * .12, .85 + y * .12, 1.22 + z * .12], .6, [1, 1, .85]);
+  for (const sd of [-1, 1]) m.ico(0, (x, y, z) => [sd * .38 + x * .06, .25 + y * .06, .45 + z * .06], 0, [.9, .9, .7]);
+  const a = m.v(0, 0, -.7, 0, skin), b = m.v(0, .35, -1.05, 0, skin), c = m.v(0, -.35, -1.05, 0, skin); m.tri(a, b, c); m.tri(c, b, a);
+  return m;
+}
+function mkIsopod() {
+  const m = new Mdl(), sh = [.82, .84, .9];
+  for (let k = 0; k < 7; k++) { const z = .6 - k * .2, w = .42 * (1 - abs(k - 2.5) / 6); m.ico(1, (x, y, zz) => [x * w, .05 + y * .16, z + zz * .13], 0, sh.map(c => c * (k % 2 ? .9 : 1))) }
+  for (const sd of [-1, 1]) { for (let k = 0; k < 6; k++) { const z = .5 - k * .18; m.tube([[sd * .3, 0, z], [sd * .5, -.05, z - .03], [sd * .58, -.18, z - .05]], .025, 3, sd * (k + 1) / 7, sh) } m.tube([[sd * .1, .05, .78], [sd * .4, .1, 1.2], [sd * .7, .05, 1.5]], .015, 3, 0, sh) }
+  return m;
+}
+function mkVent() {
+  seed(91); const m = new Mdl(), rock = [.2, .19, .2];
+  for (let k = 0; k < 5; k++) { const r = 1.3 - k * .2; m.tube([[rb(-.1, .1), k * 1.1, rb(-.1, .1)], [rb(-.1, .1), k * 1.1 + 1.2, rb(-.1, .1)]], r, 8, 0, rock, false) }
+  m.tube([[0, 5.6, 0], [0, 5.9, 0]], .5, 8, 0, [1, .55, .15]);
+  return m;
+}
+const models = {}, modelList = [];
+const addModel = (name, m) => { const b = m.build(); b.name = name; models[name] = b; modelList.push(b) };
+addModel("fish", mkFish()); addModel("manta", mkManta()); addModel("jelly", mkJelly()); addModel("crab", mkCrab()); addModel("clam", mkClam()); addModel("diver", mkDiver());
+for (let k = 0; k < 4; k++) addModel("rock" + k, mkRock(k)); for (let k = 0; k < 3; k++) addModel("blob" + k, mkCoralBlob(k)); for (let k = 0; k < 2; k++) addModel("branch" + k, mkCoralBranch(k));
+addModel("squid", mkSquid()); addModel("angler", mkAngler()); addModel("isopod", mkIsopod()); addModel("vent", mkVent());
+addModel("turtle", mkTurtle()); addModel("puffer", mkPuffer()); addModel("seahorse", mkSeahorse()); addModel("clown", mkClown()); addModel("shark", mkShark());
+addModel("shell", mkShell()); addModel("chest", mkChest()); addModel("log", mkLog()); addModel("wreck", mkWreck()); addModel("buoy", mkBuoy());
+let TV = 0, TI = 0; for (const m of modelList) { m.v0 = TV; m.i0 = TI; TV += m.nv; TI += m.ib.length }
+const mvb = new Uint8Array(TV * 20), mib = new Uint32Array(TI); for (const m of modelList) { mvb.set(new Uint8Array(m.vb), m.v0 * 20); mib.set(m.ib, m.i0) }
+const gMVB = buf(mvb, BU.VERTEX), gMIB = buf(mib, BU.INDEX);
+const TYPE = { fish: 1, manta: 2, jelly: 3, crab: 4, clam: 5, diver: 6, turtle: 7, puffer: 8, seahorse: 9, clown: 1, shark: 10, whale: 11, squid: 12, angler: 13, isopod: 4, vent: 14 };
+
+// ================= terrain mesh (built once) =================
+const X0 = -120, X1 = 120, Z0 = -16, Z1 = 564, NXT = X1 - X0 + 1, NZT = Z1 - Z0 + 1;
+const HG = new Float32Array(NXT * NZT);
+for (let j = 0; j < NZT; j++) for (let i = 0; i < NXT; i++) HG[i + j * NXT] = heightAt(X0 + i, Z0 + j);
+const floorAt = (x, z) => { const fx = clamp(x - X0, 0, NXT - 1.001), fz = clamp(z - Z0, 0, NZT - 1.001), i = fx | 0, j = fz | 0, u = fx - i, v = fz - j, k = i + j * NXT; return lerp(lerp(HG[k], HG[k + 1], u), lerp(HG[k + NXT], HG[k + NXT + 1], u), v) };
+const terrain = (() => {
+  const vb = new ArrayBuffer(NXT * NZT * 16), vf = new Float32Array(vb), vi = new Int8Array(vb);
+  for (let j = 0; j < NZT; j++) for (let i = 0; i < NXT; i++) {
+    const k = i + j * NXT, h = HG[k], hx = (HG[min(i + 1, NXT - 1) + j * NXT] - HG[max(i - 1, 0) + j * NXT]) / 2, hz = (HG[i + min(j + 1, NZT - 1) * NXT] - HG[i + max(j - 1, 0) * NXT]) / 2;
+    const n = norm([-hx, 1, -hz]);
+    let occ = 0; for (const [dx, dz] of [[3, 0], [-3, 0], [0, 3], [0, -3], [6, 6], [-6, 6], [6, -6], [-6, -6]]) occ += clamp((floorAt(X0 + i + dx, Z0 + j + dz) - h) / 8, 0, 1);
+    vf[k * 4] = X0 + i; vf[k * 4 + 1] = h; vf[k * 4 + 2] = Z0 + j;
+    vi[k * 16 + 12] = round(n[0] * 127); vi[k * 16 + 13] = round(n[1] * 127); vi[k * 16 + 14] = round(n[2] * 127); vi[k * 16 + 15] = round(clamp(1 - occ / 8 * .8, .2, 1) * 127);
+  }
+  const ib = new Uint32Array((NXT - 1) * (NZT - 1) * 6); let o = 0;
+  for (let j = 0; j < NZT - 1; j++) for (let i = 0; i < NXT - 1; i++) { const a = i + j * NXT; ib[o++] = a; ib[o++] = a + NXT; ib[o++] = a + 1; ib[o++] = a + 1; ib[o++] = a + NXT; ib[o++] = a + NXT + 1 }
+  return { vb: buf(new Uint8Array(vb), BU.VERTEX), ib: buf(ib, BU.INDEX), n: ib.length };
+})();
+const inValley = (z, k = .75) => pathX(z) + rb(-k, k) * halfW(z);
+
+// ================= static decoration (per dive seed) =================
+let deco = null;
+function buildDeco(sd) {
+  seed(1000 + sd);
+  const inst = {}; const add = (name, x, y, z, s, yaw = rand() * TAU, bank = 0, tint = [1, 1, 1], glow = 0, ty = 0) => (inst[name] ||= []).push(x, y, z, s, yaw, bank, rand() * 10, glow, ty, ...tint);
+  const CORAL = [[1, .32, .25], [.62, .22, .80], [1, .55, .12], [1, .38, .55], [.2, .65, .75], [1, .82, .2]];
+  for (let k = 0; k < 520; k++) {
+    const z = rb(-4, 96), x = pathX(z) + rb(-1, 1) * (halfW(z) + 4), y = floorAt(x, z); if (y > floorAt(pathX(z), z) + 8) continue;
+    const t = CORAL[rand() * CORAL.length | 0], r = rand();
+    if (r < .45) add("blob" + (rand() * 3 | 0), x, y - .2, z, rb(.4, 1.4), undefined, 0, t);
+    else if (r < .8) add("branch" + (rand() * 2 | 0), x, y - .05, z, rb(.8, 1.8), undefined, 0, t);
+    else add("rock" + (rand() * 4 | 0), x, y - .3, z, rb(.6, 2.2), undefined, 0, [.9, .85, .8]);
+  }
+  for (let k = 0; k < 180; k++) { const z = rb(118, 400), x = inValley(z, 1.05), y = floorAt(x, z); add("rock" + (rand() * 4 | 0), x, y - .3, z, rb(.5, 2.5) * (z > 255 ? 1.3 : 1), undefined, 0, z > 255 ? [.35, .35, .4] : [.8, .78, .7]) }
+  for (let k = 0; k < 90; k++) { const z = rb(124, 236), x = inValley(z, .9), y = floorAt(x, z); add("branch" + (rand() * 2 | 0), x, y, z, rb(.6, 1.3), undefined, 0, CORAL[rand() * CORAL.length | 0].map(c => c * .8)) }
+  for (let k = 0; k < 90; k++) { const z = rb(400, 545), x = inValley(z, .85), y = floorAt(x, z); add("rock" + (rand() * 4 | 0), x, y - .3, z, rb(.8, 3.5), undefined, 0, [.25, .24, .3]) }
+  for (let k = 0; k < 60; k++) { const z = rb(262, 390), x = inValley(z, .8), y = floorAt(x, z); add("branch" + (rand() * 2 | 0), x, y, z, rb(.4, .9), undefined, 0, [.2, .9, 1], .9) }
+  // the wreck
+  const wx = pathX(Z_WRECK), wy = floorAt(wx, Z_WRECK);
+  add("wreck", wx, wy - .8, Z_WRECK, 1, .35, .12, [.9, .9, .9]);
+  for (const [dx, z] of [[-22, 448], [18, 470], [-12, 525], [26, 530]]) { const x = pathX(z) + dx, y = floorAt(x, z); add("vent", x, y - .3, z, 1, rand() * TAU, 0, [1, 1, 1], 0, 14); for (let k = 0; k < 14; k++) { const a = rand() * TAU, r = rb(1.6, 4), xx = x + cos(a) * r, zz = z + sin(a) * r; add("branch" + (k % 2), xx, floorAt(xx, zz), zz, rb(.5, 1), undefined, 0, [1, .25, .2], .35) } }
+  add("buoy", pathX(2) + 4, floorAt(pathX(2) + 4, 2), 2, 1, 0, 0, [1, 1, 1], .08);
+  // blades: seagrass in shallows, kelp in the forest
+  const blades = [];
+  for (let k = 0; k < 2200; k++) { const z = rb(-2, 92), x = inValley(z, .85), y = floorAt(x, z); if (fbm(x * .08, 9, z * .08) < .5) continue; for (let b = 0; b < 8; b++) blades.push(x + rb(-.6, .6), y - .05, z + rb(-.6, .6), rb(.35, .95), rand() * TAU, rb(.1, .5), rb(.04, .07), rand()) }
+  for (let k = 0; k < 900; k++) { const z = rb(122, 234), x = inValley(z, .95), y = floorAt(x, z); blades.push(x, y - .2, z, rb(5, 13), rand() * TAU, rb(0, .2), rb(.3, .5), 2 + rand()) }
+  // school fish (decorative)
+  const sch = [];
+  for (const [z, n, R, col] of [[30, 90, 9, 1], [60, 70, 7, 1], [80, 60, 11, 1], [150, 70, 8, 1], [190, 60, 10, 1], [215, 50, 6, 1], [300, 40, 8, 0]]) {
+    const x = pathX(z), y = floorAt(x, z) + rb(4, 7), sp = (rand() < .5 ? -1 : 1) * rb(.18, .3) * 12 / R, ph = rand();
+    for (let i = 0; i < n; i++) sch.push(x, y, z, R, sp, ph, rb(.9, 1.3), rand());
+  }
+  const snow = new Float32Array(3500 * 4); for (let i = 0; i < snow.length; i++) snow[i] = rand();
+  const streak = new Float32Array(500 * 4); for (let i = 0; i < 500; i++) { const z = rb(98, 120); streak.set([pathX(z) + rb(-7, 7), floorAt(pathX(z), z) + rb(.5, 9), rand(), rand()], i * 4) }
+  if (deco) for (const b of deco.bufs) b.destroy();
+  const groups = [], bufs = [];
+  for (const [name, arr] of Object.entries(inst)) { const b = buf(new Float32Array(arr), BU.VERTEX); bufs.push(b); groups.push([models[name], b, arr.length / 12]) }
+  const gB = buf(new Float32Array(blades), BU.VERTEX), gS = buf(new Float32Array(sch), BU.VERTEX), gSn = buf(snow, BU.VERTEX), gSt = buf(streak, BU.VERTEX); bufs.push(gB, gS, gSn, gSt);
+  deco = { groups, bufs, gB, nB: blades.length / 8, gS, nS: sch.length / 8, gSn, gSt };
+}
+
+// ================= dive state =================
+let state = "base", dive = null;
+const diver = { p: [0, 0, 0], v: [0, 0, 0], yaw: 0 };
+function newDive(sdIn) {
+  save.dives++; persist();
+  const rejoin = NET.on && (NET.host ? !!NET.world : NET.sea && sdIn === undefined);
+  const sd = rejoin || (NET.on && !NET.host && sdIn === undefined) ? NET.sd : sdIn ?? save.dives * 13 + 7;
+  const W = NET.host ? NET.world : null;
+  if (NET.on && NET.host && !rejoin) { NET.sd = sd; netSend("*", { t: "start", sd }) }
+  buildDeco(sd);
+  seed(2000 + sd);
+  const C = [];
+  const spawn = (sp, z0, z1, n, hgt) => { for (let k = 0; k < n; k++) { const z = rb(z0, z1), x = inValley(z, .6); C.push({ sp, home: [x, z], p: [x, floorAt(x, z) + hgt(), z], yaw: rand() * TAU, tgt: null, loops: 0, alive: true, phase: rand() * 10, bank: 0, agit: 0, charge: 0, hgt }) } };
+  const spawnAt = (sp, cv, n, hgt) => { for (let k = 0; k < n; k++) { const a = rand() * TAU, r = sqrt(rand()) * cv.r * .55, x = cv.x + cos(a) * r, z = cv.z + sin(a) * r; C.push({ sp, home: [x, z], p: [x, floorAt(x, z) + hgt(), z], yaw: rand() * TAU, tgt: null, loops: 0, alive: true, phase: rand() * 10, bank: 0, agit: 0, charge: 0, h0: hgt() }) } };
+  spawn("clam", 8, 88, 6, () => .15);
+  spawn("seahorse", 10, 85, 3, () => rb(1.2, 2.2));
+  spawn("clown", 15, 88, 4, () => rb(1, 1.8));
+  spawn("puffer", 20, 88, 2, () => rb(2, 3.5));
+  spawn("manta", 35, 88, 2, () => rb(4, 6));
+  spawn("jelly", 128, 232, 5, () => rb(3, 7));
+  spawn("crab", 150, 232, 4, () => .35);
+  spawn("puffer", 130, 230, 2, () => rb(2, 4));
+  spawn("seahorse", 130, 225, 1, () => rb(1.5, 2.5));
+  spawn("jelly", 250, 300, 2, () => rb(3, 6));
+  spawnAt("clam", COVES[0], 2, () => .15); spawnAt("seahorse", COVES[0], 1, () => 1.8); spawnAt("clown", COVES[0], 2, () => 1.4);
+  spawnAt("jelly", COVES[1], 3, () => rb(3, 5)); spawnAt("crab", COVES[1], 1, () => .35);
+  spawnAt("turtle", COVES[2], 2, () => rb(2, 3)); spawnAt("clown", COVES[2], 1, () => 1.4);
+  spawnAt("turtle", COVES[3], 1, () => 3); spawnAt("puffer", COVES[3], 1, () => 3);
+  spawn("angler", 430, 540, 4, () => rb(1.2, 2.5)); spawn("isopod", 425, 545, 5, () => .3); spawn("isopod", 300, 380, 2, () => .3); spawn("jelly", 425, 540, 4, () => rb(3, 7));
+  for (const c of C) if (c.h0 === undefined) c.h0 = c.p[1] - floorAt(c.p[0], c.p[2]);
+  { const x = pathX(Z_BOSS), z = Z_BOSS; C.push({ sp: "squid", home: [x, z], p: [x, floorAt(x, z) + 5.5, z], yaw: 0, ph: 0, phase: 0, loops: 0, alive: true, agit: 0, h0: 9, st: "idle", tt: 0, cd: 3 }) }
+  const shark = (x, z) => C.push({ sp: "shark", home: [x, z], p: [x, floorAt(x, z) + 3, z], yaw: 0, ph: rand() * TAU, phase: rand() * 10, cd: 0, scared: 0, loops: 0, alive: true, agit: 0, h0: 3 });
+  for (const z of [150, 205, 280, 335, 365]) shark(inValley(z, .5), z);
+  shark(COVES[3].x, COVES[3].z);
+  const T = []; for (let k = 0; k < 18; k++) { const z = rb(6, 360), x = inValley(z, .7); T.push({ p: [x, floorAt(x, z) + .25, z], taken: false }) }
+  for (let k = 0; k < 10; k++) { const z = rb(425, 545), x = inValley(z, .7); T.push({ p: [x, floorAt(x, z) + .25, z], taken: false, val: 10 }) }
+  for (const cv of COVES) for (let k = 0; k < 4; k++) { const a = rand() * TAU, r = sqrt(rand()) * cv.r * .7, x = cv.x + cos(a) * r, z = cv.z + sin(a) * r; T.push({ p: [x, floorAt(x, z) + .25, z], taken: false }) }
+  dive = {
+    o2max: UPG.tank.val(save.up.tank), speed: UPG.fin.val(save.up.fin), light: UPG.light.val(save.up.light), capsMax: UPG.caps.val(save.up.caps), depthMax: UPG.suit.val(save.up.suit),
+    t: 0, caps: save.carry.slice(0, UPG.caps.val(save.up.caps)), creatures: C, sharks: C.filter(c => c.sp === "shark"), treasures: T, pearls: 0, items: { chest: false, log: false }, boulder: { alive: true, t: 0 }, fx: { light: 0, ride: 0, scare: 0, sense: 0, guard: 0, escort: 0, lure: 0, armor: 0, cloak: 0, ink: 0, bubbles: [] }, maxZ: 0, ended: false, whale: rand() * TAU, kb: [0, 0],
+    chest: { p: [pathX(Z_CHEST), floorAt(pathX(Z_CHEST), Z_CHEST), Z_CHEST] }, log: { p: [pathX(Z_WRECK) + .6, floorAt(pathX(Z_WRECK), Z_WRECK) + .9, Z_WRECK - 1] },
+  };
+  save.carry = []; persist();
+  if (W) { dive.creatures = W.creatures; dive.sharks = W.sharks; dive.boulder = W.boulder; dive.t = W.t; NET.world = null }
+  dive.boss = dive.creatures.find(c => c.sp === "squid"); dive.parts = []; dive.down = 0; NET.sendT = 0;
+  dive.o2 = dive.o2max; dive.stMax = 100 + save.up.fin * 25; dive.st = dive.stMax; dive.stIdle = 0; dive.tired = false;
+  diver.p = [pathX(4), floorAt(pathX(4), 4) + 2.6, 4]; diver.v = [0, 0, 0]; diver.yaw = 0;
+  trail = []; state = "dive"; resetMap(); capT = null;
+  $("base").classList.add("hide"); setHud(true); renderCaps();
+  flash(MISSIONS[save.mission] ? "ミッション：" + MISSIONS[save.mission].title : "自由に潜ろう");
+}
+
+// ================= multiplayer (PeerJS / WebRTC, the host runs the sea) =================
+const NET = { world: null, sd: 0, sea: false, ghost: false, on: false, host: false, id: "", name: "", code: "", peer: null, conns: new Map(), hostConn: null, players: new Map(), lobby: [], tgt: null, P0: null, FX: null, sendT: 0 };
+const TINTS = [[.55, 1, .7], [1, .7, .5], [.8, .6, 1], [1, 1, .5]];
+const isLit = c => (dive.fx.light > 0 || dive.fx.lure > 0) && dist3(c.p, diver.p) < 45;
+const mpSt = t => { $("mpSt").innerHTML = t };
+function netSend(to, m) {
+  if (!NET.on) return;
+  m.from ||= NET.id;
+  if (NET.host) { for (const [id, c] of NET.conns) if ((to === "*" ? id !== m.from : id === to) && c.open) c.send(m) }
+  else if (NET.hostConn && NET.hostConn.open) NET.hostConn.send({ ...m, to })
+}
+function netAll() {
+  const L = NET.ghost ? [] : [{ local: true, p: NET.P0 || diver.p, fx: NET.FX || dive.fx }];
+  if (NET.on) for (const P of NET.players.values()) if (P.diving && P.p && !(P.down > 0)) L.push({ local: false, id: P.id, p: P.p, fx: P.fx || {} });
+  return L;
+}
+function netTarget(p) {
+  if (!NET.on || !NET.players.size) return;
+  let best = null, bd = 1e9;
+  for (const T of netAll()) { if (T.local && dive.down > 0) continue; const d = dist3(T.p, p); if (d < bd) { bd = d; best = T } }
+  if (!best || best.local) { diver.p = NET.P0; dive.fx = NET.FX; NET.tgt = null } else { diver.p = best.p; dive.fx = best.fx; NET.tgt = best }
+}
+function netRestore() { if (NET.P0) { diver.p = NET.P0; dive.fx = NET.FX } NET.tgt = null; NET.P0 = null; NET.FX = null }
+function netAsLocal(f) { const p = diver.p, fx = dive.fx, t = NET.tgt; diver.p = NET.P0; dive.fx = NET.FX; NET.tgt = null; f(); diver.p = p; dive.fx = fx; NET.tgt = t }
+const netTeamAlive = () => [...NET.players.values()].some(P => P.diving && !(P.down > 0));
+const r1 = v => round(v * 10) / 10, r2 = v => round(v * 100) / 100;
+const STS = ["", "patrol", "stalk", "windup", "lunge", "retreat", "flee", "idle", "sweep", "ink"];
+function worldOnly(dt) {
+  const W = NET.world; if (!W) return;
+  if (!netTeamAlive() && ![...NET.players.values()].some(P => P.diving)) { NET.world = null; netSend("*", { t: "seaend" }); if (state === "base") mpRender(); return }
+  const keepP = diver.p, keepFx = W.fx; NET.ghost = true;
+  try { W.t += dt; simWorld(W, dt, dt, true); netTick(dt) } finally { NET.ghost = false; diver.p = keepP; W.fx = keepFx; NET.tgt = null; NET.P0 = null; NET.FX = null }
+}
+function netTick(dt) {
+  if (!NET.on) return;
+  NET.sendT -= dt; if (NET.sendT > 0) return;
+  if (NET.host) {
+    NET.sendT = .1;
+    const C = dive.creatures.map(c => [r1(c.p[0]), r1(c.p[1]), r1(c.p[2]), r2(c.yaw || 0), c.alive ? 1 : 0, c.loops, (c.agit > 0 ? 1 : 0) | (c.puff > 0 ? 2 : 0) | (c.dash > 0 ? 4 : 0) | (c.scared > 0 ? 8 : 0), max(0, STS.indexOf(c.st || "")), c.ldir ? r2(c.ldir[0]) : 0, c.ldir ? r2(c.ldir[1]) : 0, r2(c.tt || 0)]);
+    const B = dive.boss, PL = [{ id: NET.id, name: NET.name, p: diver.p.map(r1), yaw: r2(diver.yaw), ride: dive.fx.ride > 0, lit: dive.fx.light > 0 || dive.fx.lure > 0, down: dive.down, o2f: r2(dive.o2 / dive.o2max), diving: state === "dive" && !NET.ghost, mt: dive.mount && !NET.ghost ? { k: dive.mount.k, r: dive.mount.r } : null }];
+    for (const P of NET.players.values()) PL.push({ id: P.id, name: P.name, p: P.p, yaw: P.yaw, ride: P.ride, mt: P.diving ? P.mt : null, lit: P.lit, down: P.down, o2f: P.o2f, diving: P.diving });
+    netSend("*", { t: "snap", sd: NET.sd, C, b: B ? [B.sdir ? r2(B.sdir[0]) : 0, B.sdir ? r2(B.sdir[1]) : 0, B.struck ? 1 : 0] : null, bo: dive.boulder.alive ? 1 : 0, PL });
+  } else {
+    NET.sendT = .066; const f = dive.fx;
+    netSend("host", { t: "me", p: diver.p.map(r1), yaw: r2(diver.yaw), ride: f.ride > 0, lit: f.light > 0 || f.lure > 0, down: dive.down, o2f: r2(dive.o2 / dive.o2max), diving: state === "dive", mt: dive.mount ? { k: dive.mount.k, r: dive.mount.r } : null, fx: { light: f.light, lure: f.lure, cloak: f.cloak, escort: f.escort, guard: f.guard, armor: f.armor, scare: f.scare } });
+  }
+}
+function guestWorld(dt) {
+  const d = dive, k = 1 - exp(-dt * 9);
+  for (const c of d.creatures) {
+    if (c.np) { for (let a = 0; a < 3; a++) c.p[a] += (c.np[a] - c.p[a]) * k; let dy = c.nyaw - c.yaw; dy = ((dy + PI) % TAU + TAU) % TAU - PI; c.yaw += dy * k }
+    if (c.alive && SPECIES[c.sp].wild && trail.length > 2 && (c.loops > 0 || (capT === c && abs(capAcc) > 1))) {
+      const s = project(c.p); if (s) { const r = bodyR(c, s); for (let i = 0; i < trail.length - 1; i++) if (segDist(s, trail[i], trail[i + 1]) < r) { breakLine(c, s); netSend("host", { t: "brk", i: d.creatures.indexOf(c) }); break } }
+    }
+  }
+  if (d.boss) d.boss.tt = (d.boss.tt || 0) + dt;
+  d.threat = 0;
+  for (const h of d.sharks) if (h.alive && dist3(h.p, diver.p) < 30) d.threat = max(d.threat, h.st === "windup" || h.st === "lunge" ? 1 : h.st === "stalk" ? .5 : 0);
+  const B = d.boss; if (B && B.alive && dist3(B.p, diver.p) < 60) d.threat = max(d.threat, B.st === "sweep" ? 1 : .3);
+}
+function netApplySnap(m) {
+  const d = dive; if (!d || state !== "dive") { netPlayers(m.PL); return }
+  m.C.forEach((a, i) => {
+    const c = d.creatures[i]; if (!c) return;
+    const al = !!a[4]; if (al && !c.alive) { c.p = [a[0], a[1], a[2]]; c.yaw = a[3] }
+    c.alive = al; c.np = [a[0], a[1], a[2]]; c.nyaw = a[3];
+    if (!(capT === c && drawing) || a[5] > c.loops || a[5] === 0) c.loops = a[5];
+    c.agit = a[6] & 1 ? 1 : 0; c.puff = a[6] & 2 ? 1 : 0; c.dash = a[6] & 4 ? 1 : 0; c.scared = a[6] & 8 ? 1 : 0;
+    const st = STS[a[7]]; if (st !== c.st) { c.st = st; if (c !== d.boss) c.tt = 0 } if (c === d.boss && st) c.tt = a[10];
+    if (a[8] || a[9]) c.ldir = [a[8], a[9]];
+  });
+  if (m.b && d.boss) { d.boss.sdir = [m.b[0], m.b[1]]; d.boss.struck = m.b[2] }
+  if (!m.bo) d.boulder.alive = false;
+  netPlayers(m.PL);
+}
+function netPlayers(PL) {
+  const seen = new Set();
+  PL.forEach((q, i) => { if (q.id === NET.id) return; seen.add(q.id); const P = NET.players.get(q.id) || { id: q.id }; Object.assign(P, q); P.tint = TINTS[i % 4]; NET.players.set(q.id, P) });
+  for (const id of [...NET.players.keys()]) if (!seen.has(id)) NET.players.delete(id);
+}
+function applyShared(m) {
+  if (!dive || state !== "dive" || dive.down > 0) return;
+  const S = SPECIES[m.sp], f = dive.fx; if (dist3(m.p, diver.p) > S.range) return;
+  const set = { jelly: () => { f.light = 45; f.ink = 0 }, puffer: () => f.scare = 30, shark: () => f.escort = 40, angler: () => { f.lure = 60; f.ink = 0 }, isopod: () => f.armor = 40, squid: () => f.cloak = 40, seahorse: () => f.sense = 40, clown: () => f.guard = 30, clam: () => dive.o2 = min(dive.o2max, dive.o2 + 35) }[m.sp];
+  if (!set) return; set(); flash(`${m.name}の${S.name}の力が届いた！`); ringFx.push({ r: 3, t: 0, col: S.color }); sfx("ability");
+}
+function onMsg(m) {
+  if (NET.host && m.to && m.to !== "host" && m.to !== NET.id) { netSend(m.to, m); if (m.to !== "*") return }
+  const P = NET.players.get(m.from);
+  switch (m.t) {
+    case "hello": if (NET.host) { NET.players.set(m.from, { id: m.from, name: m.name, tint: TINTS[NET.players.size % 4], diving: false }); netLobby(); sfx("pickup") } break;
+    case "lobby": NET.lobby = m.list; mpRender(); break;
+    case "full": mpSt(m.why); break;
+    case "start": NET.sd = m.sd; NET.sea = true; if (state === "result") $("rOk").click(); if (state === "base") { audio(); newDive(m.sd) } break;
+    case "seaend": NET.sea = false; if (state === "base") mpRender(); break;
+    case "snap": if (!NET.sea || NET.sd !== m.sd) { NET.sea = true; NET.sd = m.sd; if (state === "base") mpRender() } netApplySnap(m); break;
+    case "me": if (NET.host && P) { Object.assign(P, m); if (P.fx) P.fx.bubbles = [] } break;
+    case "left": NET.players.delete(m.id); break;
+    case "loop": if (NET.host && dive && state === "dive") { const c = dive.creatures[m.i]; if (!c || !c.alive) break; c.loops++; c.agit = 6; (c.help ||= new Set()).add(m.from);
+      if (c.loops >= SPECIES[c.sp].loops) { c.alive = false; c.deadT = 0; netSend(m.from, { t: "cap", i: m.i }); for (let k = 0; k < 14; k++) dive.fx.bubbles.push({ p: c.p.slice(), v: [rb(-1, 1), rb(.5, 2), rb(-1, 1)], t: 0, life: 1.2, col: [1, .95, .6] }); if (SPECIES[c.sp].legend) flash(`${P ? P.name : "仲間"}が${SPECIES[c.sp].name}を捕まえた！`); shareParts(c, m.from) } } break;
+    case "brk": if (NET.host && dive) { const c = dive.creatures[m.i]; if (c) c.loops = max(0, c.loops - 1) } break;
+    case "cap": if (dive && state === "dive") { const c = dive.creatures[m.i]; if (!c) break; c.alive = false; if (dive.caps.length < dive.capsMax) dive.caps.push(c.sp); renderCaps(); sfx("capture"); if (capT === c) capT = null; flash(SPECIES[c.sp].name + "を捕まえた"); if (c.sp === "squid") shakeT = .6; const s = project(c.p); if (s) pop(s, SPECIES[c.sp].name + " ゲット！", "#fff3a0") } break;
+    case "part": addPart(m.sp); break;
+    case "hit": if (dive && state === "dive") { hit(m.dmg, m.text, { p: [m.sx, 0, m.sz] }, m.kb); if (m.boss && capT === dive.boss && trail.length > 2) { const s = project(dive.boss.p); if (s) breakLine(dive.boss, s) } } break;
+    case "ink": if (dive && state === "dive") { dive.fx.ink = 7; flash("墨を吐かれた！光で対抗しよう"); sfx("break") } break;
+    case "fx": applyShared(m); break;
+    case "board": if (dive && state === "dive" && dive.mount) { if (dive.mount.r.length < 3 && !dive.mount.r.includes(m.from)) { dive.mount.r.push(m.from); flash(`${m.name}が${dive.mount.k === "manta" ? "マンタ" : "ウミガメ"}に乗った`); sfx("pickup"); NET.sendT = 0 } } break;
+    case "unboard": if (dive && dive.mount) dive.mount.r = dive.mount.r.filter(id => id !== m.from); break;
+    case "turtle": if (dive && state === "dive" && dive.pass) { dive.pass = null; endDive(true, "turtle") } break;
+    case "world": if (NET.host && dive && state === "dive") {
+      if (m.sp === "crab" && dive.boulder.alive) { dive.boulder.alive = false; flash(`${P ? P.name : "仲間"}のカニが大岩を砕いた！`) }
+      if (m.sp === "puffer") for (const c of dive.creatures) if (c.alive && SPECIES[c.sp].danger && dist3(c.p, m.p) < SPECIES.puffer.range) c.scared = 30 } break;
+    case "rescue": if (dive && state === "dive" && dive.down > 0) { dive.o2 = min(dive.o2max, m.amt); dive.down = 0; flash(`${m.name}が酸素を${m.amt}分けてくれた！`); sfx("capture") } break;
+  }
+}
+const SEATS = [[-1.15, 0, -.5], [1.15, 0, -.5], [0, 1.3, -.1]];
+function mountNear() { let best = null; for (const P of NET.players.values()) if (P.diving && P.mt && P.p && !(P.down > 0) && dist3(P.p, diver.p) < 6.5) best = P; return best }
+function dismount(quiet) {
+  const d = dive; if (!d) return;
+  if (d.pass) { netSend(d.pass, { t: "unboard" }); d.pass = null; d.passWait = 0; if (!quiet) flash("降りた") }
+  if (d.mount) { const k = d.mount.k; d.mount = null; d.fx.ride = 0; if (!quiet) flash(k === "manta" ? "マンタから降りた（乗っていた仲間も降りる）" : "ウミガメを帰した") }
+}
+function keyF() {
+  const d = dive; if (!d || state !== "dive" || d.down > 0) return;
+  if (d.pass) return dismount();
+  if (d.mount) { if (d.mount.k === "turtle") { d.mount.t = 0; return } return dismount() }
+  if (NET.on) {
+    for (const P of NET.players.values()) if (P.diving && P.down > 0 && P.p && dist3(P.p, diver.p) < 4.5) return tryRescue();
+    const M = mountNear();
+    if (M) { if (M.mt.r.length >= 3) { flash("満員で乗れない"); return } netSend(M.id, { t: "board", name: NET.name }); d.passWait = 1.5; d.passTo = M.id; return }
+  }
+  flash(NET.on ? "近くに乗れる仲間も、酸素切れの仲間もいない" : "Fは乗り物から降りる／仲間を助けるときに使う");
+}
+function tryRescue() {
+  if (!NET.on || !dive || state !== "dive" || dive.down > 0) return;
+  let best = null; for (const P of NET.players.values()) if (P.diving && P.down > 0 && P.p && dist3(P.p, diver.p) < 4.5) best = P;
+  if (!best) { flash("近くに酸素切れの仲間がいない"); return }
+  const amt = floor(dive.o2 / 2); if (amt < 5) { flash("分けられる酸素が足りない"); sfx("warn"); return }
+  dive.o2 -= amt; best.down = 0; netSend(best.id, { t: "rescue", amt, name: NET.name }); flash(`${best.name}に酸素を${amt}分けた`); sfx("ability");
+}
+function netLobby() { NET.lobby = [NET.name + "（ホスト）", ...[...NET.players.values()].map(P => P.name)]; netSend("*", { t: "lobby", list: NET.lobby }); mpRender() }
+function mpRender() {
+  const go = $("go");
+  if (!NET.on) { go.disabled = false; go.textContent = "潜る"; return }
+  const host = NET.host;
+  mpSt(`部屋コード <b style="font-size:20px;letter-spacing:3px;color:#fff3a0">${NET.code}</b>　メンバー：${NET.lobby.join("・") || NET.name}<br>${host ? "友達にこのページのURLとコードを送ろう。全員そろったら「みんなで潜る」。ホストはこのページを閉じないでね（海の計算をしている）。" : "ホストが「潜る」を押すと一緒に出発します。途中からでも、海が続いていれば入れます。"}`);
+  const sea = host ? !!NET.world : NET.sea;
+  go.disabled = !host && !sea; go.textContent = sea ? "みんなの海にもどる" : host ? "みんなで潜る" : "ホスト待ち";
+  if (sea) $("mpSt").insertAdjacentHTML("beforeend", `<div style="color:#7ff0c8;margin-top:4px">仲間がまだ潜っている。「みんなの海にもどる」で同じ海に入れる。</div>`);
+  $("mpHost").disabled = $("mpJoin").disabled = true;
+}
+function loadPeer() { return new Promise((res, rej) => { if (window.Peer) return res(); const sc = document.createElement("script"); sc.src = "https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"; sc.onload = res; sc.onerror = () => rej(new Error("通信ライブラリを読み込めません")); document.head.append(sc) }) }
+const netName = () => ($("mpName").value.trim() || "ダイバー").slice(0, 8);
+$("mpHost").onclick = async () => {
+  try { await loadPeer() } catch (e) { mpSt(e.message); return }
+  NET.code = Array.from({ length: 4 }, () => "ABCDEFGHJKLMNPQRSTUVWXYZ"[Math.random() * 24 | 0]).join(""); mpSt("部屋を作っています…");
+  const peer = new Peer("deepranger-" + NET.code); NET.peer = peer;
+  peer.on("open", id => { NET.on = true; NET.host = true; NET.id = id; NET.name = netName(); netLobby() });
+  peer.on("connection", c => {
+    c.on("open", () => { if (NET.conns.size >= 3) { c.send({ t: "full", why: "満員です（4人まで）" }); setTimeout(() => c.close(), 400); return } NET.conns.set(c.peer, c) });
+    c.on("data", onMsg);
+    c.on("close", () => { NET.conns.delete(c.peer); NET.players.delete(c.peer); netLobby() });
+  });
+  peer.on("error", e => mpSt("通信エラー：" + e.type));
+};
+$("mpJoin").onclick = async () => {
+  const code = $("mpCode").value.trim().toUpperCase(); if (code.length !== 4) { mpSt("4文字のコードを入れてください"); return }
+  try { await loadPeer() } catch (e) { mpSt(e.message); return }
+  mpSt("つないでいます…");
+  const peer = new Peer(); NET.peer = peer;
+  peer.on("open", id => {
+    NET.id = id; NET.name = netName(); const c = peer.connect("deepranger-" + code, { reliable: true }); NET.hostConn = c;
+    c.on("open", () => { NET.on = true; NET.host = false; NET.code = code; c.send({ t: "hello", name: NET.name, from: id }); mpRender() });
+    c.on("data", onMsg);
+    c.on("close", () => { const was = NET.on; NET.on = false; NET.hostConn = null; NET.players.clear(); NET.lobby = []; if (state === "dive") endDive(true, "host"); $("mpHost").disabled = $("mpJoin").disabled = false; mpRender(); if (was) mpSt("ホストとの接続が切れました") });
+  });
+  peer.on("error", e => mpSt(e.type === "peer-unavailable" ? "その部屋が見つかりません（コードを確認）" : "通信エラー：" + e.type));
+};
+try { $("mpName").value = localStorage.getItem("dr_name") || "" } catch (e) { }
+$("mpName").onchange = () => { try { localStorage.setItem("dr_name", $("mpName").value) } catch (e) { } };
+
+// ================= input =================
+const keys = {}, KEYS = keys;
+addEventListener("contextmenu", e => { if (state === "dive") e.preventDefault() });
+addEventListener("keydown", e => { keys[e.code] = true; if (state !== "dive") return; if (e.code >= "Digit1" && e.code <= "Digit5") useCap(+e.code[5] - 1); if (e.code === "KeyE") tryAscend(); if (e.code === "KeyR") useBuoy(); if (e.code === "KeyF") keyF(); if (e.code === "Space") e.preventDefault() });
+addEventListener("keyup", e => keys[e.code] = false);
+addEventListener("blur", () => { for (const k in keys) keys[k] = false });
+let trail = [], drawing = false, capT = null, capAcc = 0, capLast = null, capWarn = 0, capQ = 0;
+const bodyR = (c, s) => max(12, s.r * ({ squid: 4.2, angler: .8, isopod: .6, shark: 1.5, manta: 1.3, turtle: 1.1, clam: .55, crab: .75, jelly: .7, puffer: .6, seahorse: .45, clown: .45 }[c.sp] || .7));
+const guideR = (c, s) => max(48, bodyR(c, s) * 2.1);
+ov.addEventListener("pointerdown", e => {
+  if (state !== "dive" || dive.down > 0) return; audio(); ov.setPointerCapture(e.pointerId); drawing = true;
+  const p = { x: e.clientX, y: e.clientY, t: performance.now() }; trail = [p]; capAcc = 0; capLast = null; capQ = 0;
+  let best = null, bd = 1e9;
+  for (const c of dive.creatures) { if (!c.alive) continue; const s = project(c.p); if (!s) continue; const d = hypot(s.x - p.x, s.y - p.y); if (d < max(220, guideR(c, s) * 1.6) && d < bd && dist3(c.p, diver.p) < (c.sp === "squid" ? 50 : dive.light[1] + 15)) { bd = d; best = c } }
+  capT = best;
+});
+ov.addEventListener("pointermove", e => { if (!drawing) return; const l = trail[trail.length - 1], p = { x: e.clientX, y: e.clientY, t: performance.now() }; if (hypot(p.x - l.x, p.y - l.y) < 4) return; trail.push(p); trackLoop(p) });
+const endDraw = () => { drawing = false; capAcc = 0; capLast = null };
+ov.addEventListener("pointerup", endDraw); ov.addEventListener("pointercancel", endDraw);
+function trackLoop(p) {
+  const c = capT; if (!c || !c.alive) return;
+  const s = project(c.p); if (!s) return;
+  if (dist3(c.p, diver.p) > (c.sp === "squid" ? 45 : dive.light[1])) { capWarn = .6; capWarnText = "遠すぎる（もっと近づこう）"; capLast = null; return }
+  const dx = p.x - s.x, dy = p.y - s.y, d = hypot(dx, dy);
+  if (c.sp === "squid" && !isLit(c)) { capWarn = .6; capWarnText = "暗くて囲めない！クラゲかアンコウの光で照らそう"; capLast = null; return }
+  if (d < bodyR(c, s) * 1.15) { capWarn = .6; capWarnText = "近すぎる！点線の外側をなぞろう"; capLast = null; return }
+  const ang = atan2(dy, dx);
+  if (capLast !== null) { let da = ang - capLast; da = ((da + PI) % TAU + TAU) % TAU - PI; capAcc += da }
+  capLast = ang;
+  const q = floor(abs(capAcc) / (TAU / 4)); if (q > capQ) { capQ = q; sfx("tick", q / 4) }
+  if (abs(capAcc) >= TAU) { capAcc -= sign(capAcc) * TAU; capQ = 0; loopDone(c, s) }
+}
+let capWarnText = "";
+ov.addEventListener("wheel", e => { e.preventDefault(); zoom = clamp(zoom * exp(e.deltaY * .001), .6, 1.8) }, { passive: false });
+let zoom = 1;
+
+// ================= capture: trace around a creature; each full turn counts =================
+const dist3 = (a, b) => hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
+function loopDone(c, s) {
+  const need = SPECIES[c.sp].loops;
+  if (NET.on && !NET.host) {
+    if (c.loops + 1 >= need && dive.caps.length >= dive.capsMax) { pop(s, "カプセルがいっぱい", "#ffb0a0"); return }
+    c.loops++; loopFx.push({ x: s.x, y: s.y, r: guideR(c, s), t: 0 }); netSend("host", { t: "loop", i: dive.creatures.indexOf(c) });
+    if (c.loops < need) { pop(s, `${c.loops} / ${need}`, "#bff6ff"); sfx("loop") } return;
+  }
+  c.loops++; c.agit = 6; loopFx.push({ x: s.x, y: s.y, r: guideR(c, s), t: 0 }); (c.help ||= new Set()).add("me");
+  if (c.loops >= need) { capture(c, s); if (!c.alive) shareParts(c, "me") } else { pop(s, `${c.loops} / ${need}`, "#bff6ff"); sfx("loop") }
+}
+const PART = { manta: "マンタのヒレ", turtle: "ウミガメの甲羅のかけら", shark: "サメの歯", angler: "アンコウの灯り玉", squid: "巨影の触手" };
+function shareParts(c, capturer) {
+  const helpers = c.help || new Set(); c.help = null;
+  if (SPECIES[c.sp].loops < 3) return;
+  for (const who of helpers) { if (who === capturer) continue; if (who === "me") addPart(c.sp); else netSend(who, { t: "part", sp: c.sp }) }
+}
+function addPart(sp) {
+  if (!dive || state !== "dive") return; dive.parts.push(sp); sfx("pickup");
+  flash(`協力ボーナス：「${PART[sp] || SPECIES[sp].name + "のかけら"}」を手に入れた（売値 ${floor(SPECIES[sp].pearls / 2)}G）`);
+}
+function capture(c, s) {
+  if (dive.caps.length >= dive.capsMax) { pop(s, "カプセルがいっぱい", "#ffb0a0"); c.loops = SPECIES[c.sp].loops - 1; return }
+  if (c.sp === "squid") { flash("光る巨影――ダイオウイカを捕まえた！"); shakeT = .6 }
+  c.alive = false; c.deadT = 0; dive.caps.push(c.sp); renderCaps(); sfx("capture"); if (capT === c) capT = null; save.tut = (save.tut || 0) + 1;
+  pop(s, SPECIES[c.sp].name + " ゲット！", "#fff3a0"); flash(SPECIES[c.sp].name + "を捕まえた"); for (let k = 0; k < 14; k++) dive.fx.bubbles.push({ p: c.p.slice(), v: [rb(-1, 1), rb(.5, 2), rb(-1, 1)], t: 0, life: 1.2, col: [1, .95, .6] });
+}
+function hit(dmg, text, src, kb = 7) {
+  if (NET.tgt) { netSend(NET.tgt.id, { t: "hit", dmg, text, sx: src.p[0], sz: src.p[2], kb, boss: src === dive.boss ? 1 : 0 }); return }
+  if (dive.down > 0) return;
+  const d = dive, dx = diver.p[0] - src.p[0], dz = diver.p[2] - src.p[2], l = hypot(dx, dz) || 1; d.kb = [dx / l * kb, dz / l * kb];
+  if (d.fx.guard > 0) { flash("クマノミが守った！"); sfx("pickup"); return }
+  if (d.fx.armor > 0) dmg = ceil(dmg / 2);
+  d.o2 -= dmg; flash(text); sfx(dmg >= 15 ? "bite" : "sting"); hurtT = dmg >= 15 ? .8 : .5; shakeT = dmg >= 15 ? .5 : .25;
+  const s = project(diver.p); if (s) pop(s, `酸素 −${dmg}`, "#ff6a6a");
+  $("o2w").classList.remove("shake"); void $("o2w").offsetWidth; $("o2w").classList.add("shake");
+  for (let k = 0; k < (dmg >= 15 ? 18 : 8); k++) d.fx.bubbles.push({ p: diver.p.slice(), v: [rb(-2, 2), rb(1, 4), rb(-2, 2)], t: 0, life: 1.4, col: [1, .7, .7] });
+}
+function breakLine(c, s) { trail = []; drawing = false; capAcc = 0; capLast = null; c.loops = max(0, c.loops - 1); pop(s, "線が切れた！", "#ff8f8f"); sfx("break") }
+
+// ================= abilities =================
+let ringFx = [];
+function releaseCap(i) {
+  const sp = dive.caps[i]; if (!sp) return;
+  dive.caps.splice(i, 1); hideTip(); renderCaps(); sfx("break");
+  for (let k = 0; k < 12; k++) dive.fx.bubbles.push({ p: [diver.p[0] + rb(-.5, .5), diver.p[1] + rb(0, 1), diver.p[2] + rb(-.5, .5)], v: [rb(-1, 1), rb(1, 3), rb(-1, 1)], t: 0, life: 1.5 });
+  const s = project(diver.p); if (s) pop(s, `${SPECIES[sp].name}を逃がした`, "#bfe9f5");
+}
+function useCap(i) {
+  if (!dive || state !== "dive" || i >= dive.caps.length) return;
+  const sp = dive.caps[i], S = SPECIES[sp];
+  if (sp === "crab") {
+    const bp = [pathX(Z_BOULDER), floorAt(pathX(Z_BOULDER), Z_BOULDER), Z_BOULDER];
+    if (!dive.boulder.alive || hypot(diver.p[0] - bp[0], diver.p[2] - bp[2]) > S.range) { flash("近くに砕ける大岩がない"); sfx("warn"); return }
+    dive.boulder.alive = false; flash("カニが大岩を砕いた！"); for (let k = 0; k < 40; k++) dive.fx.bubbles.push({ p: [bp[0] + rb(-4, 4), bp[1] + rb(1, 6), bp[2] + rb(-3, 3)], v: [rb(-2, 2), rb(0, 3), rb(-2, 2)], t: 0, life: 2, col: [.8, .75, .7] });
+  } else if (sp === "clam") { dive.o2 = min(dive.o2max, dive.o2 + 35); flash("空気の泡で酸素が回復"); for (let k = 0; k < 20; k++) dive.fx.bubbles.push({ p: diver.p.slice(), v: [rb(-.6, .6), rb(1, 3), rb(-.6, .6)], t: 0, life: 2, col: [.8, .95, 1] }) }
+  else if (sp === "jelly") { dive.fx.light = 45; dive.fx.ink = 0; flash("ヒカリクラゲがまわりを照らす") }
+  else if (sp === "manta") { dismount(true); dive.fx.ride = 25; dive.mount = { k: "manta", r: [] }; flash(NET.on ? "マンタに乗った！仲間はそばでFを押すと一緒に乗れる（Fで降りる）" : "マンタに乗った！（Fで降りる）") }
+  else if (sp === "puffer") { dive.fx.scare = 30; for (const c of dive.creatures) if (c.alive && SPECIES[c.sp].danger && dist3(c.p, diver.p) < S.range) c.scared = 30; flash("ハリセンボンが威嚇！危険な生き物が逃げていく") }
+  else if (sp === "shark") { dive.fx.escort = 40; flash("サメが護衛についた！") }
+  else if (sp === "angler") { dive.fx.lure = 60; dive.fx.ink = 0; flash("アンコウの灯りが深海を照らす") }
+  else if (sp === "isopod") { dive.fx.armor = 40; flash("グソクムシの鎧！ダメージ半減") }
+  else if (sp === "squid") { dive.fx.cloak = 40; flash("墨の帳…危険な生き物に気づかれない") }
+  else if (sp === "seahorse") { dive.fx.sense = 40; flash("タツノオトシゴが宝の気配を探る") }
+  else if (sp === "clown") { dive.fx.guard = 30; flash("クマノミが守ってくれる") }
+  ringFx.push({ r: S.range, t: 0, col: S.color }); sfx("ability");
+  if (NET.on) { netSend("*", { t: "fx", sp, p: diver.p.slice(), name: NET.name }); if (!NET.host && (sp === "crab" || sp === "puffer")) netSend("host", { t: "world", sp, p: diver.p.slice() }) }
+  dive.caps.splice(i, 1); renderCaps(); hideTip();
+  if (sp === "turtle") {
+    if (NET.on && [...NET.players.values()].some(P => P.diving)) { dismount(true); dive.mount = { k: "turtle", r: [], t: 8 }; flash("ウミガメが来た！8秒後に浮上（仲間はそばでFで乗れる・自分はFで今すぐ出発）") }
+    else { flash("ウミガメに乗って浮上！"); endDive(true, "turtle") }
+  }
+}
+function useBuoy() { if (!dive || state !== "dive") return; if (!save.buoys) { flash("緊急ブイを持っていない（拠点で買える）"); sfx("warn"); return } save.buoys--; persist(); sfx("ability"); endDive(true, "buoy") }
+function tryAscend() {
+  const b = [pathX(2) + 4, 2];
+  if (hypot(diver.p[0] - b[0], diver.p[2] - b[1]) > 7) { flash("浮上はスタートのブイから"); return }
+  endDive(true);
+}
+let pend = [];
+function endDive(ok, how) {
+  if (dive.ended) return; dive.ended = true; state = "result";
+  const run = { banked: Object.fromEntries(Object.keys(SPECIES).map(k => [k, 0])), items: ok ? dive.items : { chest: false, log: false }, abyss: ok && dive.maxZ > Z_ABYSS + 5 };
+  let pearls = ok ? dive.pearls : floor(dive.pearls / 2), lines = [];
+  if (how === "turtle") lines.push("ウミガメの力で浮上した"); if (how === "buoy") lines.push("緊急ブイで浮上した"); if (how === "host") lines.push("ホストが浮上したので、いっしょに浮上した");
+  if (dive.mount && how !== "turtle") dive.mount = null; if (dive.pass) { netSend(dive.pass, { t: "unboard" }); dive.pass = null }
+  if (NET.on) { if (NET.host) { NET.world = [...NET.players.values()].some(P => P.diving) ? dive : null; if (!NET.world) netSend("*", { t: "seaend" }) } else netSend("host", { t: "me", diving: false }) }
+  pend = [];
+  if (ok) {
+    for (const sp of dive.caps) { run.banked[sp]++; save.aq[sp]++; pend.push({ sp, choice: null }) }
+    for (const sp of dive.parts || []) { run.banked[sp]++; const v = floor(SPECIES[sp].pearls / 2); pearls += v; lines.push(`協力の素材「${PART[sp] || SPECIES[sp].name + "のかけら"}」を売った +${v}G`) }
+    if (dive.items.chest) lines.push("宝箱を持ち帰った");
+    if (dive.items.log) lines.push(`<div style="margin:6px 0;padding:8px 10px;border-radius:8px;background:#0a3449;font-size:13px">航海日誌：${LOG_TEXT}</div>`);
+  } else lines.push("酸素切れで強制浮上…カプセルの生き物を逃がし、拾った金貨の半分を失った");
+  const m = MISSIONS[save.mission];
+  let cleared = false;
+  if (ok) sfx("capture");
+  if (ok && m && m.check(run)) { pearls += m.reward; cleared = true; lines.push(`<b style="color:#fff3a0">ミッション達成！「${m.title}」 +${m.reward}G</b>`); save.mission++ }
+  else if (ok && !m && save.req && run.banked[save.req.sp] >= save.req.n) { pearls += save.req.reward; cleared = true; lines.push(`<b style="color:#fff3a0">依頼達成！「${SPECIES[save.req.sp].name}を${save.req.n}匹」 +${save.req.reward}G</b>`); save.req = null }
+  if (save.mission >= MISSIONS.length && !save.req) save.req = newReq();
+  if (cleared && m && m.check === MISSIONS[3].check) lines.push(`<div style="margin-top:6px;color:#9fe6ff">第1章クリア！ 第2章「深淵」が始まった。日誌が語る“光る巨影”を追おう。</div>`);
+  if (cleared && save.mission >= MISSIONS.length && m) lines.push(`<div style="margin-top:6px;color:#ffd0ff">第2章クリア！ 光る巨影の正体はダイオウイカだった。</div>`);
+  if (false) lines.push(`<div style="margin-top:6px">第1章クリア！ここからは帰還のたびに新しい「依頼」が届く。図鑑の全種類もめざそう。<br></div>`);
+  save.pearls += pearls; persist();
+  $("rT").textContent = ok ? (cleared ? "達成！" : "無事に帰還") : "強制浮上";
+  $("rB").innerHTML = lines.map(l => `<div>${l}</div>`).join("") + `<div style="margin-top:8px">獲得したゴールド <span class="pearl">${pearls} G</span></div><div id="pendL"></div>`;
+  // default choice: tank if there is room, otherwise sell
+  let room = TANK_MAX - save.tank.length; for (const p of pend) p.choice = room-- > 0 ? "tank" : "sell";
+  renderPend();
+  $("res").classList.remove("hide"); setHud(false); trail = [];
+}
+function renderPend() {
+  const el = $("pendL"); if (!el) return;
+  if (!pend.length) { el.innerHTML = ""; return }
+  const capsMax = UPG.caps.val(save.up.caps), nCarry = pend.filter(p => p.choice === "carry").length, nTank = pend.filter(p => p.choice === "tank").length;
+  el.innerHTML = `<h3 style="margin:12px 0 6px">連れて帰った生き物をどうする？</h3>`;
+  pend.forEach((p, i) => {
+    const S = SPECIES[p.sp], row = document.createElement("div"); row.className = "sp"; row.style.marginBottom = "6px";
+    row.innerHTML = `<i style="background:${S.color}"></i><div style="flex:1"><b>${S.name}</b> <span class="pearl" style="font-size:12px">${S.pearls}G</span><div style="font-size:12px;color:#9cc9d8">${S.ability}</div></div>`;
+    for (const [k, label, okk] of [["sell", `売る +${S.pearls}G`, true], ["carry", "次も連れて行く", p.choice === "carry" || nCarry < capsMax], ["tank", "水槽で保管", p.choice === "tank" || save.tank.length + nTank < TANK_MAX]]) {
+      const b = document.createElement("button"); b.textContent = label; b.style.cssText = "padding:6px 9px;font-size:12px;margin-left:4px" + (p.choice === k ? ";background:#5ff0ff;color:#03303e" : "");
+      b.disabled = !okk; b.onclick = () => { p.choice = k; renderPend() }; row.append(b);
+    }
+    el.append(row);
+  });
+  el.insertAdjacentHTML("beforeend", `<div style="font-size:12px;color:#9cc9d8">カプセル ${nCarry}/${capsMax} · 水槽 ${save.tank.length + nTank}/${TANK_MAX}</div>`);
+}
+$("rOk").onclick = () => {
+  for (const p of pend) { if (p.choice === "sell") save.pearls += SPECIES[p.sp].pearls; else if (p.choice === "carry") save.carry.push(p.sp); else save.tank.push(p.sp) }
+  pend = []; persist();
+  $("res").classList.add("hide"); state = "base"; renderBase();
+};
+
+// ================= simulation =================
+let loopFx = [], pops = [];
+const pop = (s, text, col) => pops.push({ x: s.x, y: s.y, text, col, t: 0 });
+let msgT = 0; const flash = t => { if (NET.ghost) return; const m = $("msg"); m.textContent = t; m.style.opacity = 1; msgT = 2.4 };
+const boulderPos = () => [pathX(Z_BOULDER), Z_BOULDER];
+const wallAt = (x, z) => floorAt(x, z) > -floorD(clamp(z, 0, 560)) + 5.5 - 6 * exp(-(pow(x - pathX(Z_BOSS), 2) + pow(z - Z_BOSS, 2)) / 900);
+const steep = (x, z, cx, cz) => { const nf = floorAt(x, z), cf = floorAt(cx, cz), d = hypot(x - cx, z - cz) || 1e-3; return nf - cf > d * 1.05 + .01 || (wallAt(x, z) && nf > cf + .01) };
+function blocked(x, z, cx, cz) {
+  if (steep(x, z, cx, cz)) return true;
+  if (dive.boulder.alive) { const [bx, bz] = boulderPos(); if (hypot(x - bx, z - bz) < 7) return true }
+  return z < -6 || z > 552 || x < X0 + 2 || x > X1 - 2;
+}
+function step(dt) {
+  const d = dive; d.t += dt;
+  const keys = d.down > 0 ? {} : KEYS;
+  // movement
+  const riding = d.fx.ride > 0, wantDash = (keys.ShiftLeft || keys.ShiftRight) && (keys.KeyW || keys.KeyA || keys.KeyS || keys.KeyD || keys.ArrowUp || keys.ArrowDown || keys.ArrowLeft || keys.ArrowRight);
+  if (d.st <= 0) d.tired = true; if (d.tired && d.st > 30) d.tired = false;
+  const dash = wantDash && !d.tired && !riding;
+  if (dash) { d.st = max(0, d.st - dt * 32); d.stIdle = 0 } else { d.stIdle += dt; if (d.stIdle > .7) d.st = min(d.stMax, d.st + dt * 22) }
+  if (wantDash && d.tired && msgT <= 0) flash("息切れ…スタミナが回復するまでダッシュできない");
+  const ix = (keys.KeyD || keys.ArrowRight ? 1 : 0) - (keys.KeyA || keys.ArrowLeft ? 1 : 0), iz = (keys.KeyW || keys.ArrowUp ? 1 : 0) - (keys.KeyS || keys.ArrowDown ? 1 : 0);
+  const slow = drawing ? .45 : 1, il = hypot(ix, iz) || 1, sp = (riding ? 14 : d.speed) * (dash ? 1.55 : 1) * (drawing ? .5 : 1);
+  const k = 1 - exp(-dt * 3.5);
+  diver.v[0] += (-ix / il * sp - diver.v[0]) * k; diver.v[2] += (iz / il * sp - diver.v[2]) * k;
+  let vx = diver.v[0] + d.kb[0], vz = diver.v[2] + d.kb[1]; d.kb[0] *= exp(-dt * 4); d.kb[1] *= exp(-dt * 4);
+  const inCurrent = diver.p[2] > Z_GATE1[0] && diver.p[2] < Z_GATE1[1];
+  if (inCurrent && !riding) vz -= 9;
+  const cur = floorAt(diver.p[0], diver.p[2]);
+  const nx = diver.p[0] + vx * dt, nz = diver.p[2] + vz * dt;
+  if (!blocked(nx, diver.p[2], diver.p[0], diver.p[2])) diver.p[0] = nx; else { diver.v[0] *= .3; d.kb[0] *= -.3 }
+  if (!blocked(diver.p[0], nz, diver.p[0], diver.p[2])) diver.p[2] = nz; else { diver.v[2] *= .3; d.kb[1] *= -.3 }
+  if (abs(diver.v[0]) + abs(diver.v[2]) > .5) { const ty = atan2(diver.v[0], diver.v[2]); let dy = ty - diver.yaw; dy = ((dy + PI) % TAU + TAU) % TAU - PI; diver.yaw += dy * min(1, dt * 6) }
+  const ty = floorAt(diver.p[0], diver.p[2]) + (riding || d.mount ? 3.4 : 2.6);
+  diver.p[1] += (ty - diver.p[1]) * min(1, dt * 3);
+  if (d.mount && d.mount.r.length) d.mount.r = d.mount.r.filter(id => { const P = NET.players.get(id); return P && P.diving });
+  if (d.mount && d.mount.k === "manta" && d.fx.ride <= 0) { d.mount = null; flash("マンタが去っていった") }
+  if (d.mount && d.mount.k === "turtle") { d.mount.t -= dt; if (d.mount.t <= 0) { for (const id of d.mount.r) netSend(id, { t: "turtle" }); flash("ウミガメに乗って浮上！"); endDive(true, "turtle"); return } }
+  if (d.passWait > 0) { d.passWait -= dt; const M = NET.players.get(d.passTo); if (M && M.mt && M.mt.r.includes(NET.id)) { d.pass = d.passTo; d.passWait = 0; flash(`${M.name}の${M.mt.k === "manta" ? "マンタ" : "ウミガメ"}に乗った（Fで降りる）`); sfx("ability") } else if (d.passWait <= 0) flash("乗れなかった") }
+  if (d.pass) {
+    const M = NET.players.get(d.pass), seat = M && M.mt ? M.mt.r.indexOf(NET.id) : -1;
+    if (!M || !M.diving || seat < 0) { d.pass = null; flash(M && M.mt && M.mt.k === "turtle" ? "ウミガメから降りた" : "マンタから降りた") }
+    else { const o = SEATS[seat] || SEATS[2], q = M.rp || M.p, y = M.ryaw ?? M.yaw, rx = cos(y), rz = -sin(y), fx = sin(y), fz = cos(y);
+      diver.p = [q[0] + rx * o[0] + fx * o[2], q[1] + o[1] + (seat === 2 && M.mt.r.length > 2 ? 0 : 0), q[2] + rz * o[0] + fz * o[2]]; diver.yaw = y; diver.v = [0, 0, 0]; d.kb = [0, 0] }
+  }
+  d.maxZ = max(d.maxZ, diver.p[2]);
+  // oxygen & pressure
+  const depth = -diver.p[1], over = depth > d.depthMax;
+  d.o2 -= dt * (dash ? 1.3 : 1) * (over ? 4 : 1);
+  if (over && floor(d.t * 2) % 4 === 0 && msgT <= 0) flash("水圧が強すぎる！耐圧スーツが必要（酸素が急減）");
+  if (d.o2 <= 0) {
+    d.o2 = 0;
+    if (NET.on && netTeamAlive()) { if (!(d.down > 0)) { d.down = 30; drawing = false; trail = []; flash("酸素切れ！仲間に助けてもらおう（仲間がFで酸素を分けられる）"); sfx("bite") } d.down -= dt; if (d.down <= 0) { endDive(false); return } }
+    else { endDive(false); return }
+  } else d.down = 0;
+  for (const k of ["light", "ride", "scare", "sense", "guard", "escort", "lure", "armor", "cloak", "ink"]) d.fx[k] = max(0, d.fx[k] - dt);
+  if (inCurrent && !riding && msgT <= 0 && iz > 0) flash("海流が強くて進めない…マンタに乗れば越えられる");
+  if (d.boulder.alive && hypot(diver.p[0] - boulderPos()[0], diver.p[2] - boulderPos()[1]) < 11 && msgT <= 0) flash("大岩がふさいでいる…カニの力で砕ける");
+  // pickups
+  for (const t of d.treasures) if (!t.taken && dist3(t.p, diver.p) < 3.2) { t.taken = true; const v = t.val || 4; d.pearls += v; sfx("pickup"); const s = project(t.p); if (s) pop(s, `${v > 4 ? "深海の宝石" : "金貨"} +${v}G`, v > 4 ? "#bfa8ff" : "#ffe9a8") }
+  if (!d.items.chest && dist3(d.chest.p, diver.p) < 4) { d.items.chest = true; flash("宝箱を手に入れた！ブイまで戻ろう") }
+  if (!d.items.log && dist3(d.log.p, diver.p) < 4) { d.items.log = true; flash("航海日誌を手に入れた！ブイまで戻ろう"); sfx("capture") }
+  // creatures (slowed down while you draw)
+  const cdt = dt * slow;
+  if (NET.on && !NET.host) guestWorld(dt); else simWorld(d, dt, cdt, false);
+  sharkMusic(d.threat, dt);
+  d.whale += dt * .045;
+  if (!d.abyssMsg && diver.p[2] > Z_ABYSS) { d.abyssMsg = 1; flash("深淵にたどり着いた…") }
+  // bubbles
+  if (floor(d.t / 2.6) !== floor((d.t - dt) / 2.6)) for (let k = 0; k < 5; k++) d.fx.bubbles.push({ p: [diver.p[0], diver.p[1] + .4, diver.p[2]], v: [rb(-.2, .2), rb(1.2, 2), rb(-.2, .2)], t: k * -.08, life: 2.5, col: [.6, .8, .85] });
+  for (const b of d.fx.bubbles) { b.t += dt; if (b.t > 0) for (let a = 0; a < 3; a++) b.p[a] += b.v[a] * dt }
+  d.fx.bubbles = d.fx.bubbles.filter(b => b.t < b.life);
+  // trail fades
+  const now = performance.now(); trail = trail.filter(p => now - p.t < 1600);
+  netTick(dt);
+}
+// the sea itself: creatures, sharks, the boss (run by the host, also while the host is on the surface)
+function simWorld(d, dt, cdt, ghost) {
+  NET.P0 = ghost ? [1e5, 0, 1e5] : diver.p; NET.FX = ghost ? { light: 0, ride: 0, scare: 0, sense: 0, guard: 0, escort: 0, lure: 0, armor: 0, cloak: 0, ink: 0, bubbles: [] } : d.fx;
+  for (const c of d.creatures) {
+    netTarget(c.p);
+    if (!c.alive) {
+      if (c.deadT === undefined || SPECIES[c.sp].legend) continue;
+      c.deadT += dt;
+      if (c.deadT > 90 && hypot(c.home[0] - diver.p[0], c.home[1] - diver.p[2]) > 35) { c.alive = true; c.deadT = undefined; c.loops = 0; c.agit = 0; c.dash = 0; c.scared = 0; c.p = [c.home[0], floorAt(c.home[0], c.home[1]) + c.h0, c.home[1]]; if (c.sp === "shark") { c.st = "patrol"; c.tt = 0; c.cd = 5 } }
+      continue;
+    }
+    const sp = c.sp, dd = dist3(c.p, diver.p);
+    c.agit = max(0, c.agit - cdt);
+    if (c.loops > 0 && dd > (sp === "squid" ? 70 : d.light[1] + 12)) { c.loops = 0; c.help = null }
+    if (sp === "shark" || sp === "squid") { /* own AI below */ }
+    else if (c.scared > 0) { c.scared -= cdt; const ax = c.p[0] - diver.p[0], az = c.p[2] - diver.p[2], l = hypot(ax, az) || 1, nx2 = c.p[0] + ax / l * 4 * cdt, nz2 = c.p[2] + az / l * 4 * cdt; if (!steep(nx2, nz2, c.p[0], c.p[2])) { c.p[0] = nx2; c.p[2] = nz2 } c.yaw = atan2(ax, az); if (sp === "crab") c.p[1] = floorAt(c.p[0], c.p[2]) + .35 }
+    else if (sp === "clam") { /* stays put */ }
+    else if (sp === "manta") {
+      const R = 9, w = (c.agit > 0 ? .45 : .3);
+      c.phase += cdt * w; const tx = c.home[0] + cos(c.phase) * R, tz = c.home[1] + sin(c.phase) * R * .7;
+      const fx = tx - c.p[0], fz = tz - c.p[2], l = hypot(fx, fz) || 1, spd = c.agit > 0 ? 7 : 5;
+      c.p[0] += fx / l * min(l, spd * cdt); c.p[2] += fz / l * min(l, spd * cdt);
+      c.yaw = atan2(fx, fz); c.bank = -.35;
+      c.p[1] += (floorAt(c.p[0], c.p[2]) + 5 - c.p[1]) * cdt;
+    } else {
+      const base = { jelly: .9, seahorse: .5, clown: 2.2, puffer: 1.2, turtle: 1.6, crab: 1.8, angler: .4, isopod: .6 }[sp] || 1;
+      if (!c.tgt || hypot(c.tgt[0] - c.p[0], c.tgt[1] - c.p[2]) < .8 || rand() < cdt * .1) { const r = sp === "turtle" ? 10 : 6; c.tgt = [c.home[0] + rb(-r, r), c.home[1] + rb(-r, r)] }
+      let tx = c.tgt[0], tz = c.tgt[1], spd = base;
+      if (c.agit > 0) { const ax = c.p[0] - diver.p[0], az = c.p[2] - diver.p[2], l = hypot(ax, az) || 1; tx = c.p[0] + ax / l * 5; tz = c.p[2] + az / l * 5; spd *= sp === "crab" ? 1.8 : 1.3 }
+      const near = dd < 6 && !(d.fx.cloak > 0);
+      if (sp === "angler" && (near || c.agit > 0)) { c.charge -= cdt; if (c.charge < 0) { c.charge = rb(2, 3); c.dash = .45 } }
+      if (sp === "crab" && (c.agit > 0 || near)) { c.charge -= cdt; if (c.charge < 0) { c.charge = rb(1.4, 2.6); c.dash = .6 } }
+      if (sp === "puffer" && (c.agit > 0 || near)) { c.charge -= cdt; if (c.charge < 0) { c.charge = rb(1.8, 3); c.dash = .5; c.puff = 1.5 } }
+      c.puff = max(0, (c.puff || 0) - cdt);
+      if (c.dash > 0) { c.dash -= cdt; const ax = diver.p[0] - c.p[0], az = diver.p[2] - c.p[2], l = hypot(ax, az) || 1; tx = c.p[0] + ax / l * 5; tz = c.p[2] + az / l * 5; spd = sp === "crab" ? 9 : sp === "angler" ? 10 : 6 }
+      const fx = tx - c.p[0], fz = tz - c.p[2], l = hypot(fx, fz) || 1;
+      const nx2 = c.p[0] + fx / l * spd * cdt, nz2 = c.p[2] + fz / l * spd * cdt, fl = floorAt(c.p[0], c.p[2]);
+      if (!steep(nx2, nz2, c.p[0], c.p[2])) { c.p[0] = nx2; c.p[2] = nz2 } else c.tgt = null;
+      c.yaw = atan2(fx, fz);
+      if (sp === "crab" || sp === "isopod") c.p[1] = floorAt(c.p[0], c.p[2]) + (sp === "crab" ? .35 : .25);
+      else c.p[1] += (floorAt(c.p[0], c.p[2]) + c.h0 + sin(d.t * .5 + c.phase) * (sp === "jelly" ? 1.2 : .4) - c.p[1]) * cdt * .8;
+    }
+    if (SPECIES[sp].danger && sp !== "shark" && c.dash > 0 && !(c.hitcd > 0) && dist3(c.p, diver.p) < 1.9) { c.hitcd = 3.5; c.dash = 0; c.charge = 2.5; hit(SPECIES[sp].danger, sp === "crab" ? "カニにはさまれた！" : sp === "angler" ? "アンコウに噛まれた！" : "ハリセンボンのトゲ！", c) }
+    c.hitcd = max(0, (c.hitcd || 0) - cdt);
+    if (SPECIES[sp].wild && trail.length > 2 && (c.loops > 0 || (capT === c && abs(capAcc) > 1))) {
+      const s = project(c.p); if (s) { const r = bodyR(c, s); for (let i = 0; i < trail.length - 1; i++) { if (segDist(s, trail[i], trail[i + 1]) < r) { breakLine(c, s); break } } }
+    }
+  }
+  // sharks: patrol → stalk (circle you) → wind-up (telegraph) → lunge (straight, dodge sideways) → retreat
+  d.threat = 0;
+  for (const h of d.sharks) {
+    if (!h.alive) continue;
+    netTarget(h.p);
+    h.cd = max(0, h.cd - cdt); h.scared = max(0, h.scared - cdt); h.st = h.st || "patrol"; h.tt = (h.tt || 0) + cdt;
+    const dx = diver.p[0] - h.p[0], dz = diver.p[2] - h.p[2], dh = hypot(dx, dz), dd = hypot(dx, dz, diver.p[1] - h.p[1]);
+    const go = st => { h.st = st; h.tt = 0 };
+    if ((h.scared > 0 || (d.fx.escort > 0 && dd < SPECIES.shark.range)) && h.st !== "flee") { go("flee"); h.scared = max(h.scared, 3) }
+    let tx = h.p[0], tz = h.p[2], spd = 3;
+    if (h.st === "flee") { const l = dh || 1; tx = h.p[0] - dx / l * 10; tz = h.p[2] - dz / l * 10; spd = 8; if (h.scared <= 0) go("patrol") }
+    else if (h.st === "patrol" || d.fx.cloak > 0) { if (h.st !== "patrol") go("patrol"); h.ph += cdt * .25; tx = h.home[0] + cos(h.ph) * 10; tz = h.home[1] + sin(h.ph) * 7; spd = 3; if (dd < 18 && h.cd <= 0) { go("stalk"); h.ang = atan2(h.p[2] - diver.p[2], h.p[0] - diver.p[0]); sfx("notice") } }
+    else if (h.st === "stalk") { h.ang += cdt * .9; const r = lerp(10, 7, min(1, h.tt / 2.6)); tx = diver.p[0] + cos(h.ang) * r; tz = diver.p[2] + sin(h.ang) * r; spd = 7; d.threat = max(d.threat, .5); if (dd > 30) go("patrol"); else if (h.tt > 2.6) go("windup") }
+    else if (h.st === "windup") { tx = h.p[0] + dx * .01; tz = h.p[2] + dz * .01; spd = 1; h.ldir = [dx / (dh || 1), dz / (dh || 1)]; h.ldur = min(1.4, (dd + 5) / 15); d.threat = 1; if (h.tt > .75) { go("lunge"); sfx("lunge") } }
+    else if (h.st === "lunge") { tx = h.p[0] + h.ldir[0] * 10; tz = h.p[2] + h.ldir[1] * 10; spd = 15; d.threat = 1; if (h.tt > (h.ldur || 1)) { go("retreat"); h.cd = 5 } }
+    else if (h.st === "retreat") { const l = dh || 1; tx = h.p[0] - dx / l * 10; tz = h.p[2] - dz / l * 10; spd = 5; if (h.tt > 3) go("patrol") }
+    const fx = tx - h.p[0], fz = tz - h.p[2], l = hypot(fx, fz) || 1, nx = h.p[0] + fx / l * min(l, spd * cdt), nz = h.p[2] + fz / l * min(l, spd * cdt);
+    if (!steep(nx, nz, h.p[0], h.p[2])) { h.p[0] = nx; h.p[2] = nz } else if (h.st === "lunge") { go("retreat"); h.cd = 5 }
+    if (h.st === "windup") h.yaw = atan2(dx, dz); else if (l > .05) { let dy = atan2(fx, fz) - h.yaw; dy = ((dy + PI) % TAU + TAU) % TAU - PI; h.yaw += dy * min(1, cdt * (h.st === "lunge" ? 10 : 4)) }
+    h.p[1] += (diver.p[1] * (h.st === "patrol" ? 0 : .7) + (floorAt(h.p[0], h.p[2]) + 3) * (h.st === "patrol" ? 1 : .3) - h.p[1]) * min(1, cdt * 2);
+    if (h.st === "lunge" && dd < 3.1) { go("retreat"); h.cd = 5; hit(20, "サメにかまれた！", h, 11) }
+  }
+  // the glowing shadow: drifts in the abyss, sweeps with a tentacle (red band), spits ink
+  const B = d.boss;
+  if (B && B.alive) {
+    netTarget(B.p);
+    B.tt += cdt; B.cd -= cdt;
+    const dx = diver.p[0] - B.p[0], dz = diver.p[2] - B.p[2], dh = hypot(dx, dz);
+    const lit = (d.fx.light > 0 || d.fx.lure > 0) && dist3(B.p, diver.p) < 45;
+    B.lit = lit;
+    if (B.st === "idle") {
+      B.ph += cdt * .12; const tx = B.home[0] + cos(B.ph) * 14, tz = B.home[1] + sin(B.ph) * 10, fx = tx - B.p[0], fz = tz - B.p[2], l = hypot(fx, fz) || 1;
+      B.p[0] += fx / l * min(l, 2.5 * cdt); B.p[2] += fz / l * min(l, 2.5 * cdt); B.yaw = atan2(fx, fz);
+      if (dh < 42 && B.cd <= 0 && !(d.fx.cloak > 0)) { if (rand() < .62) { B.st = "sweep"; B.tt = 0; B.sdir = [dx / (dh || 1), dz / (dh || 1)]; sfx("notice") } else { B.st = "ink"; B.tt = 0 } }
+      if (dh < 60) d.threat = max(d.threat, .3);
+    } else if (B.st === "sweep") {
+      if (B.tt < .9) B.sdir = [dx / (dh || 1), dz / (dh || 1)];
+      B.yaw = atan2(B.sdir[0], B.sdir[1]) + PI; d.threat = 1;
+      if (B.tt > 1.4 && !B.struck) {
+        B.struck = 1; sfx("lunge"); shakeT = .3;
+        for (const T of netAll()) { const ax = T.p[0] - B.p[0], az = T.p[2] - B.p[2], along = ax * B.sdir[0] + az * B.sdir[1], side = abs(ax * B.sdir[1] - az * B.sdir[0]);
+          if (along > -2 && along < 36 && side < 4) { if (T.local) netAsLocal(() => hit(SPECIES.squid.danger, "触手に打たれた！", B, 12)); else netSend(T.id, { t: "hit", dmg: SPECIES.squid.danger, text: "触手に打たれた！", sx: B.p[0], sz: B.p[2], kb: 12, boss: 1 }) } }
+        if (capT === B && trail.length > 2) { const s = project(B.p); if (s) breakLine(B, s) }
+      }
+      if (B.tt > 1.9) { B.st = "idle"; B.cd = rb(3, 5); B.struck = 0 }
+    } else if (B.st === "ink") {
+      if (B.tt > .3 && !B.inked) { B.inked = 1; for (const T of netAll()) if (hypot(T.p[0] - B.p[0], T.p[2] - B.p[2]) < 45) { if (T.local) { NET.FX.ink = 7; flash("墨を吐かれた！光で対抗しよう"); sfx("break") } else netSend(T.id, { t: "ink" }) } for (let k = 0; k < 30; k++) NET.FX.bubbles.push({ p: [B.p[0] + rb(-4, 4), B.p[1] + rb(-2, 2), B.p[2] + rb(-4, 4)], v: [rb(-2, 2), rb(-1, 1), rb(-2, 2)], t: 0, life: 2.5, col: [.05, .02, .08] }) }
+      if (B.tt > 1.2) { B.st = "idle"; B.cd = rb(3, 5); B.inked = 0 }
+    }
+    B.p[1] += (floorAt(B.p[0], B.p[2]) + 5.5 - B.p[1]) * cdt * .5;
+  }
+  netRestore();
+  // the escort shark scares small dangerous creatures too
+  for (const T of netAll()) if (T.fx.escort > 0) for (const c of d.creatures) if (c.alive && SPECIES[c.sp].danger && c.sp !== "shark" && dist3(c.p, T.p) < SPECIES.shark.range) c.scared = 2;
+  }
+const sign = x => x < 0 ? -1 : 1;
+const segDist = (p, a, b) => { const dx = b.x - a.x, dy = b.y - a.y, l = dx * dx + dy * dy || 1, t = clamp(((p.x - a.x) * dx + (p.y - a.y) * dy) / l, 0, 1); return hypot(p.x - a.x - dx * t, p.y - a.y - dy * t) };
+
+// ================= camera, lights, rendering =================
+const mul4 = (a, b, o = new Float32Array(16)) => { for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s } return o };
+const lookDir = (e, f) => { f = norm(f); const s = norm([-f[2], 0, f[0]]), u = [s[1] * f[2] - s[2] * f[1], s[2] * f[0] - s[0] * f[2], s[0] * f[1] - s[1] * f[0]]; return { m: new Float32Array([s[0], u[0], -f[0], 0, s[1], u[1], -f[1], 0, s[2], u[2], -f[2], 0, -(s[0] * e[0] + s[1] * e[1] + s[2] * e[2]), -(u[0] * e[0] + u[1] * e[1] + u[2] * e[2]), f[0] * e[0] + f[1] * e[1] + f[2] * e[2], 1]), s, u, f } };
+const VP = new Float32Array(16); let CW = 1, CH = 1, RW = 0, RH = 0, tgt = null;
+function project(p) {
+  const m = VP, x = m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], y = m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13], w = m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15];
+  if (w < .1) return null;
+  const sx = (x / w * .5 + .5) * CW, sy = (.5 - y / w * .5) * CH; return { x: sx, y: sy, r: CH * 1.2 / w * .9 };
+}
+let camP = [0, 0, 0];
+function camera(dt) {
+  const target = [diver.p[0], diver.p[1], diver.p[2] + 3];
+  let e = [diver.p[0], diver.p[1] + 9.5 * zoom, diver.p[2] - 8.5 * zoom];
+  e[1] = min(e[1], -1.2); e[1] = max(e[1], floorAt(e[0], e[2]) + 2.5);
+  const k = dt > 0 ? 1 - exp(-dt * 5) : 1;
+  for (let a = 0; a < 3; a++) camP[a] += (e[a] - camP[a]) * k;
+  if (shakeT > 0 && dt > 0) { shakeT -= dt; for (let a = 0; a < 3; a++) camP[a] += (Math.random() - .5) * shakeT * 2.2 }
+  const L = lookDir(camP, [target[0] - camP[0], target[1] - camP[1], target[2] - camP[2]]), asp = RW / RH, FOV = 1.0, f = 1 / Math.tan(FOV / 2);
+  const P = new Float32Array([f / asp, 0, 0, 0, 0, f, 0, 0, 0, 0, 0, -1, 0, 0, .1, 0]);
+  mul4(P, L.m, VP); U.set(VP, 0);
+  U[16] = camP[0]; U[17] = camP[1]; U[18] = camP[2];
+  U[20] = RW; U[21] = RH; U[22] = 1 / RW; U[23] = 1 / RH;
+  U[24] = L.f[0]; U[25] = L.f[1]; U[26] = L.f[2]; U[28] = L.s[0]; U[29] = L.s[1]; U[30] = L.s[2]; U[31] = Math.tan(FOV / 2) * asp; U[32] = L.u[0]; U[33] = L.u[1]; U[34] = L.u[2]; U[35] = Math.tan(FOV / 2);
+}
+function lights() {
+  const L = [];
+  if (dive) {
+    const f = [-sin(diver.yaw) * 0, 0, 0], fw = [sin(diver.yaw), 0, cos(diver.yaw)];
+    const inkK = dive.fx.ink > 0 && !(dive.fx.light > 0 || dive.fx.lure > 0) ? .4 : 1;
+    L.push([diver.p[0] + fw[0] * 2.5, diver.p[1] + .3, diver.p[2] + fw[2] * 2.5, dive.light[0] * inkK, 1, .95, .82, 1.6]);
+    if (dive.fx.lure > 0) L.push([diver.p[0] - fw[0] * 1.5, diver.p[1] + 3, diver.p[2] - fw[2] * 1.5, 40 * min(1, dive.fx.lure / 2), 1, .95, .7, 1.2]);
+    if (dive.fx.light > 0) L.push([diver.p[0], diver.p[1] + 2.5, diver.p[2], 30 * min(1, dive.fx.light / 2), .45, 1, .95, 1.1]);
+    const cand = [];
+    cand.push([pathX(2) + 4, floorAt(pathX(2) + 4, 2) + 1.5, 2, 12, 1, .7, .35, 2]);
+    if (!dive.items.chest) cand.push([...dive.chest.p.map((v, i) => i === 1 ? v + 1 : v), 7, 1, .8, .4, 1.6]);
+    if (!dive.items.log) cand.push([...dive.log.p.map((v, i) => i === 1 ? v + .8 : v), 10, .5, .8, 1, 2]);
+    for (const c of dive.creatures) if (c.alive && c.sp === "jelly") cand.push([c.p[0], c.p[1], c.p[2], 6, .6, .9, 1, .9]);
+    for (const c of dive.creatures) if (c.alive && c.sp === "angler") cand.push([c.p[0] + sin(c.yaw) * 1.3, c.p[1] + .9, c.p[2] + cos(c.yaw) * 1.3, 7, 1, .95, .7, 1.2]);
+    if (dive.boss && dive.boss.alive) cand.push([dive.boss.p[0], dive.boss.p[1] + 2, dive.boss.p[2], 26, 1, .3, .8, 1.1]);
+    for (const [dx, z] of [[-22, 448], [18, 470], [-12, 525], [26, 530]]) { const x = pathX(z) + dx; cand.push([x, floorAt(x, z) + 6.5, z, 14, 1, .5, .15, 1.6]) }
+    for (const t of dive.treasures) if (!t.taken) cand.push([t.p[0], t.p[1] + .5, t.p[2], 3.5, 1, .85, .5, 1]);
+    cand.sort((a, b) => dist3(a, diver.p) - dist3(b, diver.p));
+    for (const c of cand) { if (L.length >= 8) break; if (dist3(c, diver.p) < 60) L.push(c) }
+  }
+  U[37] = L.length;
+  for (let i = 0; i < 8; i++) { const l = L[i] || [0, 0, 0, 1, 0, 0, 0, 0]; U.set([l[0], l[1], l[2], l[3]], 40 + i * 4); U.set([l[4] * l[7], l[5] * l[7], l[6] * l[7], 0], 72 + i * 4) }
+}
+function resize() {
+  CW = innerWidth; CH = innerHeight;
+  const dpr = min(devicePixelRatio || 1, 2), w = max(2, round(CW * dpr)), h = max(2, round(CH * dpr)), k = min(1, sqrt(2560 * 1440 / (w * h))), W = max(2, round(w * k) & -2), H = max(2, round(h * k) & -2);
+  if (ov.width !== round(CW * dpr)) { ov.width = round(CW * dpr); ov.height = round(CH * dpr); o2d.setTransform(dpr, 0, 0, dpr, 0, 0) }
+  if (W === RW && H === RH) return;
+  RW = W; RH = H; canvas.width = W; canvas.height = H; ctx.configure({ device, format: canvasFormat, alphaMode: "opaque" });
+  if (tgt) for (const t of tgt.all) t.destroy();
+  const all = [], T = (...a) => { const t = tex(...a); all.push(t); return t };
+  const scene = T(W, H, HDR, TU.RENDER_ATTACHMENT | TU.TEXTURE_BINDING), msC = T(W, H, HDR, TU.RENDER_ATTACHMENT, { samples: MS }), depth = T(W, H, DEPTH, TU.RENDER_ATTACHMENT, { samples: MS });
+  const bloom = []; for (let k = 0; k < 6; k++) bloom.push(T(max(1, W >> k + 1), max(1, H >> k + 1), HDR, TU.RENDER_ATTACHMENT | TU.TEXTURE_BINDING));
+  const steps = []; for (let k = 0; k < 6; k++) steps.push([colorAtt(bloom[k].createView(), true), postBG(k ? bloom[k - 1].createView() : scene.createView()), k ? pDown : pDown0]);
+  for (let k = 5; k > 0; k--) steps.push([colorAtt(bloom[k - 1].createView(), false), postBG(bloom[k].createView()), pUp]);
+  tgt = { all, steps, main: { colorAttachments: [{ view: msC.createView(), resolveTarget: scene.createView(), loadOp: "clear", storeOp: "discard", clearValue: [0, 0, 0, 1] }], depthStencilAttachment: { view: depth.createView(), depthClearValue: 0, depthLoadOp: "clear", depthStoreOp: "store" } },
+    comp: device.createBindGroup({ layout: pComp.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: compU } }, { binding: 1, resource: sClamp }, { binding: 2, resource: scene.createView() }, { binding: 3, resource: bloom[0].createView() }] }) };
+}
+addEventListener("resize", resize);
+let dynBuf = null, dynCap = 0, haloBuf = null, haloCap = 0;
+function dynamicInstances() {
+  const groups = {}; const add = (name, x, y, z, s, yaw, bank, ph, glow, ty, tint) => (groups[name] ||= []).push(x, y, z, s, yaw, bank, ph, glow, ty, ...tint);
+  const halos = []; const halo = (p, s, c, k) => halos.push(p[0], p[1], p[2], s, c[0], c[1], c[2], k);
+  if (dive) {
+    add("diver", diver.p[0], diver.p[1], diver.p[2], 1, diver.yaw, 0, 0, 0, TYPE.diver, [1, 1, 1]);
+    if (dive.fx.ride > 0) add("manta", diver.p[0], diver.p[1] - .7, diver.p[2], 3.2, diver.yaw, 0, 0, 0, TYPE.manta, [.75, .85, 1]);
+    if (dive.mount && dive.mount.k === "turtle") add("turtle", diver.p[0], diver.p[1] - 1, diver.p[2], 2.6, diver.yaw, 0, 0, 0, TYPE.turtle, [1, 1, 1]);
+    for (const P of NET.players.values()) { if (!P.diving || !P.p) continue; if (!P.rp) { P.rp = P.p.slice(); P.ryaw = P.yaw } for (let a = 0; a < 3; a++) P.rp[a] += (P.p[a] - P.rp[a]) * .2; let dy = P.yaw - P.ryaw; dy = ((dy + PI) % TAU + TAU) % TAU - PI; P.ryaw += dy * .2;
+      add("diver", P.rp[0], P.rp[1], P.rp[2], 1, P.ryaw, P.down > 0 ? .9 : 0, 0, 0, TYPE.diver, P.tint || [1, 1, 1]); if (P.mt && P.mt.k === "manta") add("manta", P.rp[0], P.rp[1] - .7, P.rp[2], 3.2, P.ryaw, 0, 0, 0, TYPE.manta, [.75, .85, 1]); if (P.mt && P.mt.k === "turtle") add("turtle", P.rp[0], P.rp[1] - 1, P.rp[2], 2.6, P.ryaw, 0, 0, 0, TYPE.turtle, [1, 1, 1]);
+      if (P.lit) halo([P.rp[0], P.rp[1] + 1.4, P.rp[2]], 3, [.5, .9, 1], .6); halo([P.rp[0], P.rp[1] + .4, P.rp[2]], 1.2, P.down > 0 ? [1, .3, .3] : [1, .95, .8], .5) }
+    if (dive.fx.light > 0) { const a = dive.t * 1.5, p = [diver.p[0] + cos(a) * 1.6, diver.p[1] + 1.2 + sin(dive.t * 2) * .3, diver.p[2] + sin(a) * 1.6]; add("jelly", p[0], p[1], p[2], .9, a, 0, 0, .6, TYPE.jelly, [.6, .95, 1]); halo(p, 3, [.4, .9, 1], .6) }
+    for (const c of dive.creatures) {
+      if (!c.alive) continue;
+      const S = SPECIES[c.sp], glow = c.loops > 0 ? .25 + .15 * sin(dive.t * 10) : 0;
+      const sc = { clam: .9, manta: 3.4, jelly: 1.1, crab: 1.1, seahorse: .8, clown: 1.1, puffer: c.agit > 0 || c.puff > 0 ? 1.45 : .95, turtle: 1.5, shark: 1.75, squid: 2.2, angler: 1.4, isopod: 1.3 }[c.sp];
+      if (c.sp === "angler") halo([c.p[0] + sin(c.yaw) * 1.7, c.p[1] + 1.2, c.p[2] + cos(c.yaw) * 1.7], 1.1, [1, .95, .7], .9);
+      if (c.sp === "squid") halo([c.p[0], c.p[1] + 1, c.p[2]], 14, [1, .25, .8], .12 + (isLit(c) ? .1 : 0));
+      add(c.sp, c.p[0], c.p[1], c.p[2], sc, c.yaw, c.sp === "shark" && c.st === "windup" ? sin(dive.t * 40) * .06 : c.bank || 0, c.phase, glow, TYPE[c.sp], c.sp === "jelly" ? [.6, .95, 1] : c.sp === "manta" ? [.8, .85, 1] : [1, 1, 1]);
+      if (c.sp === "jelly") halo(c.p, 2.5, [.4, .85, 1], .35);
+      if (c.sp === "clam") halo([c.p[0], c.p[1] + .25, c.p[2]], .6, [1, .95, .8], .5);
+    }
+    if (dive.fx.lure > 0) halo([diver.p[0], diver.p[1] + 3, diver.p[2]], .9, [1, .95, .7], .7);
+    for (const [cz, n] of [[455, 1], [510, 2], [330, 3]]) for (let k = 0; k < 40; k++) { const a = dive.t * .2 * (k % 2 ? 1 : -1) + k * 2.4 + n, r = 6 + (k * 37 % 9), x = pathX(cz) + cos(a) * r + sin(dive.t * .7 + k) * 1.5, z = cz + sin(a) * r * .8, y = floorAt(x, z) + 5 + sin(dive.t + k * 1.7) * 2; halo([x, y, z], .25, [.35, .6, 1], .6 + .4 * sin(dive.t * 3 + k)) }
+    for (const [dx, z] of [[-22, 448], [18, 470], [-12, 525], [26, 530]]) { const x = pathX(z) + dx, y = floorAt(x, z); halo([x, y + 6, z], 3, [1, .5, .15], .6 + .2 * sin(dive.t * 4 + z)); for (let k = 0; k < 6; k++) { const t = (dive.t * .4 + k / 6) % 1; halo([x + sin(k * 3 + dive.t) * .4, y + 6 + t * 12, z + cos(k * 2) * .4], .25 + t * .3, [1, .7, .4], .25 * (1 - t)) } }
+    if (dive.fx.escort > 0) { const a = dive.t * .8, p = [diver.p[0] + cos(a) * 5, diver.p[1] + .5, diver.p[2] + sin(a) * 5]; add("shark", p[0], p[1], p[2], 1.5, atan2(-sin(a), cos(a)), -.3, 0, 0, TYPE.shark, [.85, .9, 1]) }
+    { const a = dive.whale, z = 55 + 38 * sin(a), x = pathX(z) + 16 * cos(a * 2), y = floorAt(x, z) + 9.5, dz = 38 * cos(a), dx = -32 * sin(a * 2); add("shark", x, y, z, 5.5, atan2(dx, dz), 0, 0, 0, TYPE.whale, [.42, .5, .62]) }
+    for (const t of dive.treasures) if (!t.taken) { add("shell", t.p[0], t.p[1], t.p[2], 1, dive.t + t.p[0], 0, 0, .5, 0, [1, .9, .6]); halo([t.p[0], t.p[1] + .3, t.p[2]], 1.4, [1, .85, .45], .45 + .2 * sin(dive.t * 3 + t.p[2])) }
+    if (!dive.items.chest) { add("chest", ...dive.chest.p, 1.4, .3, 0, 0, .15, 0, [1, 1, 1]); halo([dive.chest.p[0], dive.chest.p[1] + 1.2, dive.chest.p[2]], 3, [1, .8, .4], .5) }
+    if (!dive.items.log) { add("log", ...dive.log.p, 1.4, .2, 0, 0, .4, 0, [1, 1, 1]); halo([dive.log.p[0], dive.log.p[1] + .4, dive.log.p[2]], 3.5, [.5, .8, 1], .7) }
+    const [bx, bz] = boulderPos(), by = floorAt(bx, bz);
+    if (dive.boulder.alive) { add("rock0", bx, by + 1.5, bz, 6.2, .3, 0, 0, 0, 0, [.75, .72, .68]); add("rock2", bx - 3, by + .5, bz + 1.5, 4, 1.3, 0, 0, 0, 0, [.7, .68, .64]); add("rock1", bx + 3.5, by + .8, bz - 1, 4.2, 2.1, 0, 0, 0, 0, [.72, .7, .66]) }
+    else for (let k = 0; k < 7; k++) add("rock" + (k % 4), bx + sin(k * 2.3) * 5, by + .2, bz + cos(k * 1.7) * 3, 1.2 + (k % 3) * .4, k, 0, 0, 0, 0, [.7, .68, .64]);
+    const by2 = floorAt(pathX(2) + 4, 2); halo([pathX(2) + 4, by2 + 1.2, 2], 3.2, [1, .65, .3], .8 + .3 * sin(dive.t * 2));
+    for (const b of dive.fx.bubbles) if (b.t > 0) halo(b.p, .18, b.col, .5 * (1 - b.t / b.life));
+  }
+  const list = []; let n = 0; for (const [name, arr] of Object.entries(groups)) { list.push([models[name], n, arr.length / 12]); n += arr.length / 12 }
+  const data = new Float32Array(n * 12); let o = 0; for (const arr of Object.values(groups)) { data.set(arr, o); o += arr.length }
+  if (n * 48 > dynCap) { dynBuf?.destroy(); dynCap = max(4096, n * 48 * 2); dynBuf = device.createBuffer({ size: dynCap, usage: BU.VERTEX | BU.COPY_DST }) }
+  if (n) queue.writeBuffer(dynBuf, 0, data);
+  const hd = new Float32Array(halos);
+  if (hd.byteLength > haloCap) { haloBuf?.destroy(); haloCap = max(4096, hd.byteLength * 2); haloBuf = device.createBuffer({ size: haloCap, usage: BU.VERTEX | BU.COPY_DST }) }
+  if (hd.length) queue.writeBuffer(haloBuf, 0, hd);
+  return { list, nh: halos.length / 8 };
+}
+function render(dt) {
+  if (AC && AC.amb && dive) { const dp = clamp(-diver.p[1] / 70, 0, 1); AC.amb.lp.frequency.value = lerp(520, 160, dp); AC.amb.g.gain.value = lerp(.3, .5, dp) }
+  resize(); camera(dt); lights();
+  U[19] = time; U[36] = 1;
+  U[39] = dive && diver.p[2] > 90 && diver.p[2] < 128 ? 1 : 0;
+  queue.writeBuffer(gU, 0, U);
+  const danger = dive && state === "dive" ? clamp(1 - dive.o2 / (dive.o2max * .2), 0, 1) * (.4 + .3 * sin(time * 6)) : 0;
+  queue.writeBuffer(compU, 0, new Float32Array([.9, danger, 0, 0]));
+  const dyn = dynamicInstances();
+  const enc = device.createCommandEncoder(), r = enc.beginRenderPass(tgt.main);
+  r.setBindGroup(0, bg);
+  r.setPipeline(pTerrain); r.setVertexBuffer(0, terrain.vb); r.setIndexBuffer(terrain.ib, "uint32"); r.drawIndexed(terrain.n);
+  r.setPipeline(pMesh); r.setVertexBuffer(0, gMVB); r.setIndexBuffer(gMIB, "uint32");
+  if (deco) for (const [m, b, n] of deco.groups) { r.setVertexBuffer(1, b); r.drawIndexed(m.ib.length, n, m.i0, m.v0, 0) }
+  if (dyn.list.length) { r.setVertexBuffer(1, dynBuf); for (const [m, first, n] of dyn.list) r.drawIndexed(m.ib.length, n, m.i0, m.v0, first) }
+  if (deco) {
+    r.setPipeline(pSchool); r.setVertexBuffer(1, deco.gS); r.drawIndexed(models.fish.ib.length, deco.nS, models.fish.i0, models.fish.v0, 0);
+    r.setPipeline(pBlade); r.setVertexBuffer(0, deco.gB); r.draw(16, deco.nB);
+  }
+  r.setPipeline(pBg); r.draw(3);
+  if (deco) { r.setPipeline(pSnow); r.setVertexBuffer(0, deco.gSn); r.draw(4, 3500); r.setPipeline(pStreak); r.setVertexBuffer(0, deco.gSt); r.draw(4, 500) }
+  if (dyn.nh) { r.setPipeline(pHalo); r.setVertexBuffer(0, haloBuf); r.draw(4, dyn.nh) }
+  r.end();
+  for (const [att, b, p] of tgt.steps) { const q = enc.beginRenderPass({ colorAttachments: [att] }); q.setPipeline(p); q.setBindGroup(0, b); q.draw(3); q.end() }
+  const c = enc.beginRenderPass({ colorAttachments: [{ view: ctx.getCurrentTexture().createView(), loadOp: "clear", storeOp: "store", clearValue: [0, 0, 0, 1] }] });
+  c.setPipeline(pComp); c.setBindGroup(0, tgt.comp); c.draw(3); c.end();
+  queue.submit([enc.finish()]);
+}
+
+// ================= overlay: light line, loop effects, markers, HUD =================
+function drawOverlay(dt) {
+  const g = o2d; g.clearRect(0, 0, CW, CH);
+  if (state !== "dive") return;
+  // range rings on the seabed (hovered ability, and when an ability is used)
+  const ringAt = (r, col, a, dash) => { g.globalAlpha = a; g.strokeStyle = col; g.lineWidth = 3; g.setLineDash(dash ? [8, 8] : []); g.beginPath(); let first = true; for (let k = 0; k <= 64; k++) { const t = k / 64 * TAU, x = diver.p[0] + cos(t) * r, z = diver.p[2] + sin(t) * r, s = project([x, floorAt(x, z) + .3, z]); if (!s) { first = true; continue } first ? g.moveTo(s.x, s.y) : g.lineTo(s.x, s.y); first = false } g.stroke(); g.setLineDash([]); g.globalAlpha = 1 };
+  if (hoverSp) ringAt(SPECIES[hoverSp].range, SPECIES[hoverSp].color, .9, true);
+  for (const f of ringFx) { f.t += dt; ringAt(f.r * min(1, f.t / .5), f.col, max(0, 1 - f.t / 1.2), false) }
+  ringFx = ringFx.filter(f => f.t < 1.2);
+  // seahorse sense: show nearby treasure
+  if (dive.fx.sense > 0) {
+    const mark = (p, col, label) => { const s = project(p); if (!s) return; const x = clamp(s.x, 30, CW - 30), y = clamp(s.y, 60, CH - 90), off = x !== s.x || y !== s.y; g.fillStyle = col; g.globalAlpha = .6 + .4 * sin(time * 6); g.beginPath(); g.moveTo(x, y - 9); g.lineTo(x + 7, y); g.lineTo(x, y + 9); g.lineTo(x - 7, y); g.closePath(); g.fill(); g.globalAlpha = 1; if (label || off) { g.font = "600 11px system-ui"; g.textAlign = "center"; g.fillText(label || `${round(dist3(p, diver.p))}m`, x, y - 13) } };
+    for (const t of dive.treasures) if (!t.taken && dist3(t.p, diver.p) < SPECIES.seahorse.range) mark(t.p, "#ffe08a");
+    if (!dive.items.chest && dist3(dive.chest.p, diver.p) < 110) mark(dive.chest.p, "#ffb34d", "宝箱");
+  }
+  // creature markers (only when not tracing)
+  for (const c of dive.creatures) {
+    if (!c.alive || (drawing && c === capT)) continue; const s = project(c.p); if (!s || s.x < -50 || s.y < -50 || s.x > CW + 50 || s.y > CH + 50) continue;
+    const d = dist3(c.p, diver.p), inR = d <= dive.light[1], S = SPECIES[c.sp];
+    if (d > dive.light[1] + 18 && !(S.danger && d < 40)) continue;
+    const r = guideR(c, s);
+    g.globalAlpha = inR ? .75 : .3; g.strokeStyle = S.color; g.lineWidth = 2;
+    g.beginPath(); g.arc(s.x, s.y, r, 0, TAU); g.setLineDash([4, 6]); g.stroke(); g.setLineDash([]);
+    if (c.loops > 0) { g.lineWidth = 5; g.beginPath(); g.arc(s.x, s.y, r + 6, -PI / 2, -PI / 2 + TAU * c.loops / S.loops); g.stroke() }
+    if (inR || S.danger) { g.font = "700 12px system-ui"; g.fillStyle = S.danger ? "#ff8080" : "#fff"; g.textAlign = "center"; g.fillText(`${S.danger ? "⚠ 危険 " : ""}${S.name}（${c.loops}/${S.loops}周）${S.pearls}G`, s.x, s.y - r - 8) }
+    g.globalAlpha = 1;
+  }
+  // the target being traced: guide ring, no-go core, progress arc
+  if (drawing && capT && capT.alive) {
+    const c = capT, s = project(c.p);
+    if (s) {
+      const S = SPECIES[c.sp], gr = guideR(c, s), br = bodyR(c, s);
+      g.fillStyle = "rgba(255,90,90,.12)"; g.beginPath(); g.arc(s.x, s.y, br, 0, TAU); g.fill();
+      g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 2; g.setLineDash([6, 6]); g.beginPath(); g.arc(s.x, s.y, gr, 0, TAU); g.stroke(); g.setLineDash([]);
+      for (let k = 0; k < S.loops; k++) { g.strokeStyle = k < c.loops ? S.color : "rgba(255,255,255,.18)"; g.lineWidth = 6; g.beginPath(); g.arc(s.x, s.y, gr + 12 + k * 9, 0, TAU); g.stroke() }
+      if (capLast !== null && abs(capAcc) > .02) { g.strokeStyle = "#fff6a8"; g.lineWidth = 8; g.lineCap = "round"; g.beginPath(); g.arc(s.x, s.y, gr + 12 + c.loops * 9, capLast - capAcc, capLast, capAcc < 0); g.stroke() }
+      g.font = "800 14px system-ui"; g.textAlign = "center"; g.fillStyle = "#fff"; g.strokeStyle = "#000a"; g.lineWidth = 4;
+      const label = `${S.name}（${S.pearls}G）　${c.loops}/${S.loops}周　${round(abs(capAcc) / TAU * 100)}%`;
+      g.strokeText(label, s.x, s.y - gr - 18 - S.loops * 9); g.fillText(label, s.x, s.y - gr - 18 - S.loops * 9);
+    }
+  }
+  if (capWarn > 0) { capWarn -= dt; g.font = "800 16px system-ui"; g.textAlign = "center"; g.fillStyle = "#ffb0a0"; g.strokeStyle = "#000a"; g.lineWidth = 4; const p = trail[trail.length - 1]; if (p) { g.strokeText(capWarnText, p.x, p.y - 22); g.fillText(capWarnText, p.x, p.y - 22) } }
+  // the light line
+  if (trail.length > 1) {
+    g.lineCap = "round"; g.lineJoin = "round";
+    for (const [w, col] of [[10, "rgba(120,240,255,.18)"], [4, capT ? "rgba(255,250,200,.95)" : "rgba(180,250,255,.9)"]]) {
+      g.lineWidth = w; g.strokeStyle = col; g.beginPath();
+      trail.forEach((p, i) => i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y)); g.stroke();
+    }
+  }
+  for (const f of loopFx) { f.t += dt; const a = 1 - f.t / .6; if (a <= 0) continue; g.globalAlpha = a; g.strokeStyle = "#fff7b0"; g.lineWidth = 6; g.beginPath(); g.arc(f.x, f.y, f.r * (1 + f.t * .6), 0, TAU); g.stroke(); g.globalAlpha = 1 }
+  loopFx = loopFx.filter(f => f.t < .6);
+  for (const p of pops) { p.t += dt; const a = 1 - p.t / 1.3; if (a <= 0) continue; g.globalAlpha = a; g.font = "800 18px system-ui"; g.textAlign = "center"; g.fillStyle = p.col; g.strokeStyle = "#0009"; g.lineWidth = 4; g.strokeText(p.text, p.x, p.y - 30 - p.t * 30); g.fillText(p.text, p.x, p.y - 30 - p.t * 30); g.globalAlpha = 1 }
+  pops = pops.filter(p => p.t < 1.3);
+  // ascend prompt
+  const b = [pathX(2) + 4, floorAt(pathX(2) + 4, 2) + 2, 2];
+  if (dist3(b, diver.p) < 8) { const s = project(b); if (s) { g.font = "800 16px system-ui"; g.textAlign = "center"; g.fillStyle = "#ffe0a0"; g.fillText("E で浮上（帰還）", s.x, s.y - 40) } }
+  for (const h of dive.sharks) {
+    if (h.st !== "stalk" && h.st !== "windup" && h.st !== "lunge") continue;
+    const s = project([h.p[0], h.p[1] + 1.8, h.p[2]]); if (!s) continue;
+    const big = h.st !== "stalk";
+    g.font = `900 ${big ? 34 : 26}px system-ui`; g.textAlign = "center"; g.fillStyle = big ? "#ff3b3b" : "#ffcf4a"; g.strokeStyle = "#000c"; g.lineWidth = 5;
+    const txt = big ? "!!" : "!"; const yy = s.y - 16 - (big ? sin(time * 30) * 3 : 0); g.strokeText(txt, s.x, yy); g.fillText(txt, s.x, yy);
+    if (h.st === "windup" && h.ldir) { const a = project([h.p[0], h.p[1], h.p[2]]), b = project([h.p[0] + h.ldir[0] * 16, h.p[1], h.p[2] + h.ldir[1] * 16]); if (a && b) { g.strokeStyle = `rgba(255,60,60,${.5 + .4 * sin(time * 25)})`; g.lineWidth = 10; g.setLineDash([14, 10]); g.beginPath(); g.moveTo(a.x, a.y); g.lineTo(b.x, b.y); g.stroke(); g.setLineDash([]) } }
+  }
+  const Bs = dive.boss;
+  if (Bs && Bs.alive && Bs.st === "sweep" && !Bs.struck) {
+    const w = 4, L = 36, a = Bs.sdir, nrm = [a[1], -a[0]], q = [[-2, -w], [L, -w], [L, w], [-2, w]].map(([u, v]) => { const x = Bs.p[0] + a[0] * u + nrm[0] * v, z = Bs.p[2] + a[1] * u + nrm[1] * v; return project([x, floorAt(x, z) + .4, z]) });
+    if (q.every(Boolean)) { g.fillStyle = `rgba(255,40,60,${.18 + .2 * min(1, Bs.tt / 1.4) + .1 * sin(time * 20)})`; g.strokeStyle = "rgba(255,80,90,.9)"; g.lineWidth = 3; g.beginPath(); q.forEach((p, i) => i ? g.lineTo(p.x, p.y) : g.moveTo(p.x, p.y)); g.closePath(); g.fill(); g.stroke() }
+  }
+  if (dive.fx.ink > 0) { const k = min(1, dive.fx.ink / 1.5) * (dive.fx.light > 0 || dive.fx.lure > 0 ? .35 : .85); const gr = g.createRadialGradient(CW / 2, CH / 2, 40, CW / 2, CH / 2, max(CW, CH) * .6); gr.addColorStop(0, `rgba(8,0,14,${k * .55})`); gr.addColorStop(1, `rgba(4,0,8,${k})`); g.fillStyle = gr; g.fillRect(0, 0, CW, CH) }
+  if (Bs && Bs.alive && dist3(Bs.p, diver.p) < 70) {
+    const t = `光る巨影　捕獲 ${Bs.loops} / ${SPECIES.squid.loops}　${isLit(Bs) ? "照らされている：今なら囲める！" : "暗くて囲めない（光で照らそう）"}`;
+    g.font = "800 16px system-ui"; g.textAlign = "center"; g.fillStyle = isLit(Bs) ? "#ffd0ff" : "#a99bb5"; g.strokeStyle = "#000c"; g.lineWidth = 5; g.strokeText(t, CW / 2, 92); g.fillText(t, CW / 2, 92);
+  }
+  for (const P of NET.players.values()) {
+    if (!P.diving || !P.rp) continue; const s = project([P.rp[0], P.rp[1] + 1.4, P.rp[2]]); if (!s || s.x < -40 || s.x > CW + 40 || s.y < -40 || s.y > CH + 40) continue;
+    g.textAlign = "center"; g.font = "800 13px system-ui"; g.lineWidth = 4; g.strokeStyle = "#000b"; g.fillStyle = "#bff6ff"; g.strokeText(P.name, s.x, s.y - 12); g.fillText(P.name, s.x, s.y - 12);
+    g.fillStyle = "#0008"; g.fillRect(s.x - 22, s.y - 6, 44, 5); g.fillStyle = P.o2f < .25 ? "#ff6a6a" : "#6fe3ff"; g.fillRect(s.x - 22, s.y - 6, 44 * clamp(P.o2f || 0, 0, 1), 5);
+    if (P.down > 0) { const near = dist3(P.p, diver.p) < 4.5; g.font = "800 15px system-ui"; g.fillStyle = `rgba(255,110,110,${.7 + .3 * sin(time * 8)})`; const t = near ? "Fで酸素を半分わける！" : `酸素切れ！助けに行こう（${ceil(P.down)}秒）`; g.strokeText(t, s.x, s.y - 30); g.fillText(t, s.x, s.y - 30) }
+  }
+  { let t = ""; const M = !dive.pass && !dive.mount && NET.on ? mountNear() : null;
+    if (dive.pass) t = "F：降りる"; else if (dive.mount && dive.mount.k === "turtle") t = `ウミガメ：あと${ceil(dive.mount.t)}秒で浮上（${dive.mount.r.length}人乗車）　F：今すぐ出発`; else if (dive.mount) t = `マンタ ${ceil(dive.fx.ride)}秒（${dive.mount.r.length}人乗車）　F：降りる`; else if (M) t = `F：${M.name}の${M.mt.k === "manta" ? "マンタ" : "ウミガメ"}に乗る（${M.mt.r.length + 1}/4）`;
+    if (t) { g.textAlign = "center"; g.font = "800 15px system-ui"; g.lineWidth = 4; g.strokeStyle = "#000b"; g.fillStyle = "#bff6ff"; g.strokeText(t, CW / 2, CH - 150); g.fillText(t, CW / 2, CH - 150) } }
+  if (dive.down > 0) { g.fillStyle = "rgba(20,0,0,.45)"; g.fillRect(0, 0, CW, CH); g.textAlign = "center"; g.font = "800 22px system-ui"; g.fillStyle = "#ffb0b0"; g.strokeStyle = "#000c"; g.lineWidth = 5; const t = `酸素切れ…仲間の救助を待っています（あと${ceil(dive.down)}秒）`; g.strokeText(t, CW / 2, CH / 2 - 40); g.fillText(t, CW / 2, CH / 2 - 40) }
+  if (dive.threat > 0) { const gr = g.createRadialGradient(CW / 2, CH / 2, min(CW, CH) * .35, CW / 2, CH / 2, max(CW, CH) * .7); gr.addColorStop(0, "rgba(120,0,0,0)"); gr.addColorStop(1, `rgba(140,0,0,${dive.threat * (.25 + .15 * sin(time * 8))})`); g.fillStyle = gr; g.fillRect(0, 0, CW, CH) }
+  if (hurtT > 0) { hurtT -= dt; g.fillStyle = `rgba(255,40,40,${hurtT * .35})`; g.fillRect(0, 0, CW, CH) }
+  // tutorial hint
+  let hint = "";
+  if ((save.tut || 0) < 2 && !drawing && dive.creatures.some(c => c.alive && dist3(c.p, diver.p) < dive.light[1])) hint = "生き物の近くでドラッグを始めて、点線の輪に沿ってぐるっと1周なぞろう";
+  if (drawing && capT && (save.tut || 0) < 2) hint = "その調子！円を描くように、まわりをなぞり続けよう";
+  if (drawing && !capT) hint = "生き物のすぐ近くからなぞり始めよう";
+  $("hint").textContent = hint;
+  drawMap();
+}
+function setHud(on) { for (const id of ["mis", "dep", "o2w", "caps", "map", "help", "hint"]) $(id).classList.toggle("hidden", !on); if (!on) hideTip() }
+let hoverSp = null, hurtT = 0, shakeT = 0;
+function showTip(sp, el) { hoverSp = sp; const S = SPECIES[sp], t = $("tip"); t.innerHTML = `<b>${S.name}</b>　<span class="pearl">売値 ${S.pearls}G</span><div>${S.ability}</div><div style="color:#9fe6ff;font-size:12px;margin-top:3px">範囲 ${S.range}m（範囲内の仲間にも効く）</div><div style="color:#9cc9d8;font-size:11px;margin-top:3px">クリック/数字キー：使う　右クリック/×：逃がす</div>`; t.style.display = "block" }
+function hideTip() { hoverSp = null; $("tip").style.display = "none" }
+function renderCaps() {
+  const el = $("caps"); el.innerHTML = "";
+  for (let i = 0; i < dive.capsMax; i++) {
+    const sp = dive.caps[i], d = document.createElement("div"); d.className = "cap" + (sp ? "" : " empty");
+    d.innerHTML = sp ? `<b>${i + 1}</b><div><i style="background:${SPECIES[sp].color}"></i>${SPECIES[sp].name}</div>` : `<b>${i + 1}</b>空き`;
+    if (sp) { d.onclick = () => useCap(i); d.oncontextmenu = e => { e.preventDefault(); releaseCap(i) }; d.onmouseenter = () => showTip(sp, d); d.onmouseleave = hideTip; d.style.position = "relative";
+      const x = document.createElement("span"); x.textContent = "×"; x.title = "逃がす"; x.style.cssText = "position:absolute;right:3px;top:0;font-size:14px;color:#ff9a9a;cursor:pointer;padding:0 3px"; x.onclick = e => { e.stopPropagation(); releaseCap(i) }; d.append(x) }
+    el.append(d);
+  }
+  const b = document.createElement("div"); b.className = "cap buoy" + (save.buoys ? "" : " empty"); b.innerHTML = `<b>R</b><div>緊急ブイ<br>×${save.buoys || 0}</div>`; b.onclick = useBuoy;
+  b.onmouseenter = () => { const t = $("tip"); t.innerHTML = "<b>緊急ブイ</b><div>その場からすぐ浮上して帰還する（拠点で買える）</div>"; t.style.display = "block" }; b.onmouseleave = hideTip;
+  el.append(b);
+}
+function hud() {
+  if (state !== "dive") return;
+  const d = dive, m = MISSIONS[save.mission];
+  const z = diver.p[2]; let zone = ZONES[0][1]; for (const [zz, n] of ZONES) if (z >= zz) zone = n; for (const cv of COVES) if (hypot(diver.p[0] - cv.x, z - cv.z) < cv.r + 3) zone = cv.name;
+  $("mis").innerHTML = (m ? `ミッション：${m.title}` : save.req ? `依頼：${SPECIES[save.req.sp].name}を${save.req.n}匹つれて帰る` : "自由探索") + `<small>${zone}${d.items.chest ? " · 宝箱あり" : ""}${d.items.log ? " · 日誌あり" : ""} · ${d.pearls}G${d.fx.light > 0 ? ` · 照らす ${ceil(d.fx.light)}秒` : ""}${d.fx.ride > 0 ? ` · マンタ ${ceil(d.fx.ride)}秒` : ""}${d.fx.guard > 0 ? ` · 守り ${ceil(d.fx.guard)}秒` : ""}${d.fx.sense > 0 ? ` · 探知 ${ceil(d.fx.sense)}秒` : ""}${d.fx.scare > 0 ? ` · 威嚇 ${ceil(d.fx.scare)}秒` : ""}${d.fx.escort > 0 ? ` · 護衛 ${ceil(d.fx.escort)}秒` : ""}${d.fx.lure > 0 ? ` · 灯り ${ceil(d.fx.lure)}秒` : ""}${d.fx.armor > 0 ? ` · 鎧 ${ceil(d.fx.armor)}秒` : ""}${d.fx.cloak > 0 ? ` · 墨の帳 ${ceil(d.fx.cloak)}秒` : ""}</small>`;
+  const depth = -diver.p[1];
+  $("dep").innerHTML = `${depth.toFixed(1)} m<small style="color:${depth > d.depthMax ? "#ff8a8a" : "#bfe9f5"}">限界 ${d.depthMax} m</small>`;
+  const f = d.o2 / d.o2max; $("o2f").style.transform = `scaleX(${f})`; $("o2f").style.background = f < .25 ? "linear-gradient(90deg,#ff5a5a,#ffb0a0)" : "linear-gradient(90deg,#33d6ff,#a8f4ff)";
+  $("o2t").textContent = `${ceil(d.o2)} / ${d.o2max}`;
+  $("stf").style.transform = `scaleX(${d.st / d.stMax})`; $("stf").style.background = d.tired ? "linear-gradient(90deg,#8a6a3a,#c09a5a)" : "linear-gradient(90deg,#c8f560,#f4ff9a)";
+  if (msgT > 0) { msgT -= 1 / 60; if (msgT <= 0) $("msg").style.opacity = 0 }
+}
+
+// ================= minimap (fog of war) =================
+const MS2 = .5, MW = 240 * MS2 * 2, MH = 420 * MS2 * 2; // canvas is 240x420 (2px per meter... drawn at 120x210 css)
+const mapBase = document.createElement("canvas"); mapBase.width = 240; mapBase.height = 580;
+{
+  const g = mapBase.getContext("2d"), img = g.createImageData(240, 580);
+  for (let py = 0; py < 580; py++) for (let px = 0; px < 240; px++) {
+    const x = X1 - px, z = 564 - py, h = floorAt(x, z), ref = -floorD(clamp(z, 0, 560)) - 6 * exp(-(pow(x - pathX(Z_BOSS), 2) + pow(z - Z_BOSS, 2)) / 900), wall = clamp((h - ref) / 10, 0, 1), dpt = clamp(-h / 110, 0, 1), o = (px + py * 240) * 4;
+    img.data[o] = lerp(lerp(150, 30, dpt), 18, wall); img.data[o + 1] = lerp(lerp(205, 70, dpt), 30, wall); img.data[o + 2] = lerp(lerp(210, 120, dpt), 40, wall); img.data[o + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+}
+const fogC = document.createElement("canvas"); fogC.width = 240; fogC.height = 580; const fogG = fogC.getContext("2d");
+function resetMap() { fogG.globalCompositeOperation = "source-over"; fogG.fillStyle = "#020a10"; fogG.fillRect(0, 0, 240, 580) }
+const mapXY = (x, z) => [X1 - x, 564 - z];
+function drawMap() {
+  if (state !== "dive") return;
+  const [mx, my] = mapXY(diver.p[0], diver.p[2]);
+  fogG.globalCompositeOperation = "destination-out"; const gr = fogG.createRadialGradient(mx, my, 10, mx, my, 26); gr.addColorStop(0, "#000"); gr.addColorStop(1, "#0000"); fogG.fillStyle = gr; fogG.beginPath(); fogG.arc(mx, my, 26, 0, TAU); fogG.fill();
+  const m = $("map"), g = m.getContext("2d");
+  const oy = clamp(my - 210, 0, 0); g.clearRect(0, 0, 240, 580); g.drawImage(mapBase, 0, 0); g.drawImage(fogC, 0, 0);
+  const dot = (x, z, col, r) => { const [a, b] = mapXY(x, z); g.fillStyle = col; g.beginPath(); g.arc(a, b, r, 0, TAU); g.fill() };
+  dot(pathX(2) + 4, 2, "#ffb054", 6);
+  for (const P of NET.players.values()) if (P.diving && P.p) dot(P.p[0], P.p[2], P.down > 0 ? "#ff5a5a" : "#7ff0c8", 5);
+  if (!dive.items.chest && dive.maxZ > 120) dot(dive.chest.p[0], dive.chest.p[2], "#ffd36b", 5);
+  if (dive.maxZ > 300) dot(dive.log.p[0], dive.log.p[2], "#7fc8ff", 5);
+  g.save(); g.translate(mx, my); g.rotate(-diver.yaw + PI); g.fillStyle = "#fff"; g.beginPath(); g.moveTo(0, -9); g.lineTo(6, 6); g.lineTo(-6, 6); g.closePath(); g.fill(); g.restore();
+}
+// ================= sound (all synthesized) =================
+let AC = null, AM = null;
+function audio() {
+  if (AC) { if (AC.state === "suspended") AC.resume(); return }
+  try { AC = new AudioContext() } catch { return }
+  AM = new GainNode(AC, { gain: .55 }); AM.connect(AC.destination);
+  const len = AC.sampleRate * 4, nb = AC.createBuffer(1, len, AC.sampleRate), d = nb.getChannelData(0); let b = 0; for (let i = 0; i < len; i++) { b = (b + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = b * 3 }
+  const src = new AudioBufferSourceNode(AC, { buffer: nb, loop: true }), lp = new BiquadFilterNode(AC, { type: "lowpass", frequency: 380 }), g = new GainNode(AC, { gain: .35 });
+  src.connect(lp).connect(g).connect(AM); src.start(); AC.amb = { lp, g };
+}
+function tone(f, dur, type = "sine", vol = .12, f2 = f, delay = 0) {
+  if (!AC) return; const t = AC.currentTime + delay, o = new OscillatorNode(AC, { type, frequency: f }), g = new GainNode(AC, { gain: 0 });
+  o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(f2, t + dur); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+  o.connect(g).connect(AM); o.start(t); o.stop(t + dur + .05);
+}
+function noise(dur, freq, vol) {
+  if (!AC) return; const t = AC.currentTime, len = AC.sampleRate * dur, b = AC.createBuffer(1, len, AC.sampleRate), d = b.getChannelData(0); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const src = new AudioBufferSourceNode(AC, { buffer: b }), f = new BiquadFilterNode(AC, { type: "bandpass", frequency: freq, Q: .8 }), g = new GainNode(AC, { gain: vol }); src.connect(f).connect(g).connect(AM); src.start(t);
+}
+let musT = 0, musFlip = 0;
+function sharkMusic(th, dt) {
+  if (!AC || th <= 0) { musT = 0; return }
+  musT -= dt; if (musT > 0) return;
+  musT = th >= 1 ? .16 : .42; musFlip ^= 1;
+  tone(musFlip ? 82.4 : 87.3, musT * .9, "sawtooth", .09 + th * .06, musFlip ? 82.4 : 87.3); tone(musFlip ? 41.2 : 43.65, musT * .9, "sine", .16, musFlip ? 41.2 : 43.65);
+}
+function sfx(n, x = 0) {
+  if (NET.ghost) return;
+  if (!AC) return;
+  if (n === "tick") tone(520 + 380 * x, .09, "sine", .07);
+  else if (n === "loop") { tone(880, .14, "sine", .12); tone(1320, .22, "sine", .1, 1320, .08) }
+  else if (n === "capture") [660, 880, 1100, 1320, 1760].forEach((f, i) => tone(f, .25, "triangle", .1, f, i * .07));
+  else if (n === "break") { tone(220, .3, "sawtooth", .08, 70); tone(160, .25, "square", .04, 60) }
+  else if (n === "ability") { tone(300, .5, "sine", .12, 1200); tone(450, .5, "triangle", .06, 1800, .05) }
+  else if (n === "pickup") tone(1500, .15, "triangle", .08, 2200);
+  else if (n === "hurt") tone(140, .4, "sawtooth", .12, 50);
+  else if (n === "warn") tone(330, .12, "square", .05, 300);
+  else if (n === "notice") { tone(196, .5, "sawtooth", .07, 185); tone(98, .7, "sine", .12, 92) }
+  else if (n === "lunge") { tone(110, .6, "sawtooth", .12, 220); noise(.5, 600, .12) }
+  else if (n === "sting") { noise(.15, 2600, .2); tone(200, .2, "square", .08, 90) }
+  else if (n === "bite") { noise(.25, 1800, .35); tone(90, .45, "square", .18, 40); tone(60, .5, "sine", .25, 35, .02) }
+}
+// ================= base screen =================
+function renderBase() {
+  $("base").classList.remove("hide"); setHud(false); mpRender();
+  $("bPearl").textContent = save.pearls;
+  const m = MISSIONS[save.mission];
+  if (!m && !save.req) { save.req = newReq(); persist() }
+  $("bMis").innerHTML = m ? `<b>${m.ch === 2 ? "第2章 深淵" : "第1章"}　${save.mission + 1} / ${MISSIONS.length}：${m.title}</b><div style="font-size:13px;color:#b9dbe6;margin-top:4px">${m.hint}</div><div style="font-size:12px;color:#ffe9a8;margin-top:2px">報酬 ${m.reward}G</div>` : `<b>依頼：${SPECIES[save.req.sp].name}を${save.req.n}匹つれて帰る</b><div style="font-size:13px;color:#b9dbe6;margin-top:4px">全ミッションクリア済み。帰還のたびに新しい依頼が届く。</div><div style="font-size:12px;color:#ffe9a8;margin-top:2px">報酬 真珠${save.req.reward}</div>`;
+  renderPrep();
+  $("bUp").innerHTML = "";
+  for (const [k, u] of Object.entries(UPG)) {
+    const lv = save.up[k], max = u.costs.length, cost = u.costs[lv];
+    const d = document.createElement("div"); d.className = "up";
+    d.innerHTML = `<b>${u.name} <small>Lv${lv}/${max}</small></b><small>今：${u.fmt(u.val(lv))}</small>${lv < max ? `<small>次：${u.fmt(u.val(lv + 1))}</small>` : "<small>最大</small>"}`;
+    const btn = document.createElement("button"); btn.textContent = lv < max ? `強化（${cost}G）` : "最大"; btn.disabled = lv >= max || save.pearls < cost;
+    btn.onclick = () => { save.pearls -= cost; save.up[k]++; persist(); renderBase() };
+    d.append(btn); $("bUp").append(d);
+  }
+  $("bItem").innerHTML = "";
+  { const d = document.createElement("div"); d.className = "up"; d.innerHTML = `<b>緊急ブイ <small>×${save.buoys || 0} / 3</small></b><small>潜っている途中に R で、その場からすぐ帰還できる（使い切り）</small>`;
+    const btn = document.createElement("button"); btn.textContent = "買う（20G）"; btn.disabled = save.pearls < 20 || (save.buoys || 0) >= 3; btn.onclick = () => { save.pearls -= 20; save.buoys = (save.buoys || 0) + 1; persist(); renderBase() }; d.append(btn); $("bItem").append(d) }
+  $("bDexT").textContent = `図鑑（${Object.values(save.aq).filter(v => v > 0).length} / ${Object.keys(SPECIES).length} 種）`;
+  $("bAq").innerHTML = Object.entries(SPECIES).map(([k, s]) => `<div class="sp"><i style="background:${save.aq[k] ? s.color : "#234"}"></i><div><b>${save.aq[k] ? s.name : "？？？"}</b> ×${save.aq[k]}<div style="font-size:12px;color:#9cc9d8">${s.danger ? "<span style='color:#ff8080'>危険</span> · " : ""}${s.ability}（${s.loops}周で捕獲 · 売値 ${s.pearls}G）</div></div></div>`).join("");
+}
+function renderPrep() {
+  const el = $("bPrep"), capsMax = UPG.caps.val(save.up.caps); el.innerHTML = "";
+  const mk = (title, list, max, move, moveLabel, canMove) => {
+    const box = document.createElement("div"); box.style.marginBottom = "10px"; box.innerHTML = `<div style="font-size:13px;color:#8fe4ff;margin-bottom:6px">${title}（${list.length}/${max}）</div>`;
+    const row = document.createElement("div"); row.className = "row";
+    list.forEach((sp, i) => { const S = SPECIES[sp], c = document.createElement("div"); c.className = "sp"; c.style.gap = "8px"; c.innerHTML = `<i style="background:${S.color};width:18px;height:18px"></i><b style="font-size:13px">${S.name}</b>`;
+      const b1 = document.createElement("button"); b1.textContent = moveLabel; b1.style.cssText = "padding:5px 8px;font-size:12px"; b1.disabled = !canMove(); b1.onclick = () => { move(i); persist(); renderBase() };
+      const b2 = document.createElement("button"); b2.textContent = `売る +${S.pearls}G`; b2.style.cssText = "padding:5px 8px;font-size:12px;background:#4a3a14"; b2.onclick = () => { list.splice(i, 1); save.pearls += S.pearls; persist(); renderBase() };
+      c.append(b1, b2); row.append(c) });
+    if (!list.length) row.innerHTML = `<span style="font-size:12px;color:#7fa7b5">空っぽ</span>`;
+    box.append(row); el.append(box);
+  };
+  mk("カプセル（最初から持って行く）", save.carry, capsMax, i => save.tank.push(save.carry.splice(i, 1)[0]), "水槽へ", () => save.tank.length < TANK_MAX);
+  mk("水槽（保管）", save.tank, TANK_MAX, i => save.carry.push(save.tank.splice(i, 1)[0]), "連れて行く", () => save.carry.length < capsMax);
+}
+$("go").onclick = () => { if (NET.on && !NET.host && !NET.sea) return; audio(); newDive() };
+$("reset").onclick = () => { if (confirmReset()) { save = defSave(); persist(); renderBase() } };
+let resetArm = 0; function confirmReset() { if (Date.now() - resetArm < 3000) return true; resetArm = Date.now(); $("reset").textContent = "もう一度押すと消えます"; setTimeout(() => $("reset").textContent = "記録を消す", 3000); return false }
+
+// ================= main loop =================
+let time = 0, last = 0;
+buildDeco(1);
+diver.p = [pathX(30), floorAt(pathX(30), 30) + 4, 30]; camP = [diver.p[0], diver.p[1] + 10, diver.p[2] - 12];
+function frame(t) {
+  requestAnimationFrame(frame);
+  const dt = min(.05, last ? (t - last) / 1000 : .016); last = t; time += dt;
+  if (state === "dive") step(dt); else if (NET.world) worldOnly(dt);
+  if (state === "base") { diver.p[2] = 30 + sin(time * .05) * 20; diver.p[0] = pathX(diver.p[2]); diver.p[1] = floorAt(diver.p[0], diver.p[2]) + 5 }
+  render(dt); drawOverlay(dt); hud();
+}
+renderBase(); setHud(false);
+window.__T = {
+  NET, net: m => onMsg(m), rescue: () => tryRescue(), keyF: () => keyF(),
+  get state() { return state }, get dive() { return dive }, diver, save: () => save, SPECIES, MISSIONS,
+  start: () => newDive(),
+  setPos: (x, z) => { diver.p = [x, floorAt(x, z) + 2.6, z]; camera(0) },
+  run: (sec, k = {}) => { Object.assign(keys, k); const n = round(sec * 60); for (let i = 0; i < n; i++) { if (state === "dive") step(1 / 60); else if (NET.world) worldOnly(1 / 60); time += 1 / 60 } for (const kk in k) keys[kk] = false; camera(0) },
+  loopAround: i => { const c = dive.creatures[i]; camera(0); const s = project(c.p); capT = c; capAcc = 0; capLast = null; capQ = 0; const R = guideR(c, s) * 1.1; for (let a = 0; a <= 34; a++) trackLoop({ x: s.x + cos(a / 32 * TAU) * R, y: s.y + sin(a / 32 * TAU) * R }); capT = null; return c.loops },
+  drawState: (on, i) => { drawing = on; capT = on ? dive.creatures[i] : null; if (on) { const s = project(capT.p); const R = guideR(capT, s) * 1.1; trail = []; capLast = null; capAcc = 0; for (let a = 0; a <= 20; a++) { const p = { x: s.x + cos(a / 32 * TAU) * R, y: s.y + sin(a / 32 * TAU) * R, t: performance.now() }; trail.push(p); trackLoop(p) } } },
+  overlay: () => drawOverlay(0), shark: i => dive.sharks[i], hover: sp => sp ? showTip(sp) : hideTip(),
+  use: i => useCap(i), pend: () => pend, ok: () => $("rOk").click(), ascend: () => tryAscend(), give: sp => { dive.caps.push(sp); renderCaps() },
+  grab: () => { render(0); return canvas.toDataURL("image/png") }, floorAt, pathX,
+};
+if (params.has("still")) { resize(); render(0); window.__ready = true } else { requestAnimationFrame(frame); window.__ready = true }
+})().catch(e => { console.error(e); const el = document.getElementById("err"); el.style.display = "grid"; el.textContent = "エラー: " + e.message });
+</script>
+</body>
+</html>
