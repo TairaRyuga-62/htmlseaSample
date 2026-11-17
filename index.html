@@ -34,25 +34,105 @@ canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
 #hint{left:50%;bottom:52px;transform:translateX(-50%);font-size:14px;font-weight:700;color:#fff6c0;white-space:nowrap}
 .cap.buoy{width:auto;padding:0 10px;background:#3a2a0cc0;box-shadow:inset 0 0 0 2px #ffcf7a77}
 #help{right:14px;bottom:14px;font-size:12px;text-align:right;opacity:.85}
-#base{position:fixed;inset:0;overflow:auto;background:#021018e6;display:flex;justify-content:center;padding:28px 16px;box-sizing:border-box}
+/* ---------- out-game (port) ---------- */
+#base{position:fixed;inset:0;overflow:hidden;background:radial-gradient(120% 90% at 70% -10%,#0d5a7a55,transparent 60%),linear-gradient(180deg,#03131dd0,#020c13f2 70%);display:flex;flex-direction:column}
 #base.hide,#res.hide,.hidden{display:none!important}
-.panel{width:min(880px,100%);display:grid;gap:14px;align-content:start}
-.h1{font-size:30px;font-weight:900;letter-spacing:.05em;color:#bff3ff}
-.h1 small{font-size:13px;font-weight:500;color:#7fb8c8;margin-left:10px}
+.topbar{display:flex;align-items:center;gap:18px;padding:14px 26px 10px}
+.logo{display:flex;flex-direction:column;line-height:1}
+.logo b{font-size:28px;font-weight:900;letter-spacing:.06em;background:linear-gradient(#e9fdff,#7fe3ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 8px #1ec8ff55)}
+.logo small{font-size:10px;letter-spacing:.42em;color:#5fb6cc;margin-top:4px}
+.chap{display:flex;align-items:center;gap:8px;margin-left:10px;padding:6px 12px;border-radius:999px;background:#0a2b3cb0;box-shadow:inset 0 0 0 1px #2c6a8588;font-size:12px;color:#a9dceb}
+.chap .dots{display:flex;gap:4px}.chap .dots i{width:9px;height:9px;border-radius:50%;background:#1d4a5e}.chap .dots i.on{background:#5ff0ff;box-shadow:0 0 6px #5ff0ff}.chap .dots i.now{background:#fff3a0;box-shadow:0 0 8px #fff3a0}
+.spacer{flex:1}
+.badge{display:flex;align-items:center;gap:8px;padding:7px 14px 7px 8px;border-radius:999px;background:linear-gradient(#2b2208,#1a1505);box-shadow:inset 0 0 0 1.5px #c99b3a,0 4px 14px #0007;font-weight:900;font-size:18px;color:#ffe9a8}
+.badge.alt{background:linear-gradient(#0c2c3c,#071a24);box-shadow:inset 0 0 0 1.5px #3c8aa8,0 4px 14px #0007;color:#cdeff9;font-size:15px}
+.badge small{font-size:11px;font-weight:600;opacity:.75}
+.hub{flex:1;min-height:0;display:grid;grid-template-columns:minmax(300px,380px) 1fr;gap:18px;padding:6px 26px 22px}
+.col{display:flex;flex-direction:column;gap:14px;min-height:0}
+.quest{position:relative;border-radius:16px;padding:16px 18px 16px;background:linear-gradient(160deg,#1b2a2e,#0e1b20);box-shadow:inset 0 0 0 1.5px #c99b3a99,0 10px 30px #0008}
+.quest .tag{position:absolute;top:-10px;left:16px;padding:2px 10px;border-radius:6px;background:#c99b3a;color:#231803;font-size:11px;font-weight:900;letter-spacing:.15em}
+.quest h2{margin:6px 0 6px;font-size:19px;line-height:1.35;color:#fff4d6}
+.quest p{margin:0;font-size:13px;color:#c7d6d2;line-height:1.6}
+.quest .rw{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:4px 10px;border-radius:8px;background:#2b2208;color:#ffe9a8;font-weight:800;font-size:13px}
+.divebox{border-radius:16px;padding:14px;background:#06283ad0;box-shadow:inset 0 0 0 1px #2c6a85,0 10px 30px #0008;display:flex;flex-direction:column;gap:12px;margin-top:auto}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.stat{border-radius:10px;background:#0a3449;padding:8px 6px;text-align:center}
+.stat svg{width:22px;height:22px;display:block;margin:0 auto 2px}
+.stat b{display:block;font-size:16px}.stat small{font-size:10px;color:#8fc3d3}
+#go{width:100%;border-radius:14px;padding:16px;font-size:22px;font-weight:900;letter-spacing:.2em;background:linear-gradient(#7ff6ff,#17a9d2);color:#022a38;box-shadow:0 0 0 2px #bff8ff66,0 6px 0 #0b5e78,0 12px 30px #1ec8ff55;transition:transform .1s}
+#go:hover{filter:brightness(1.08);transform:translateY(-1px)}#go:active{transform:translateY(3px);box-shadow:0 0 0 2px #bff8ff66,0 3px 0 #0b5e78}
+#go:disabled{background:#1d4a5e;color:#8fb8c6;box-shadow:none;letter-spacing:.05em;font-size:17px}
+.gohint{text-align:center;font-size:11px;color:#6fa8b8;margin-top:-6px}
+.tabs{display:flex;gap:4px}
+.tab{padding:10px 18px 9px;border-radius:12px 12px 0 0;background:#04202dcc;color:#7fb4c4;font-weight:800;font-size:14px;box-shadow:inset 0 1px 0 #2c6a8566}
+.tab.on{background:#06283a;color:#e8fbff;box-shadow:inset 0 2px 0 #5ff0ff}
+.tab .n{display:inline-block;min-width:18px;margin-left:6px;padding:0 5px;border-radius:9px;background:#c94d4d;color:#fff;font-size:11px}
+.pane{flex:1;min-height:0;overflow:auto;border-radius:0 16px 16px 16px;background:#06283a;box-shadow:inset 0 0 0 1px #2c6a85,0 10px 30px #0008;padding:16px 18px}
+.sec{margin-bottom:16px}
+.sec h4{margin:0 0 8px;font-size:13px;color:#8fe4ff;letter-spacing:.08em;display:flex;align-items:center;gap:8px}
+.sec h4 span{font-weight:500;color:#6fa8b8}
+.slots{display:flex;gap:10px;flex-wrap:wrap}
+.slot{width:86px;height:96px;border-radius:14px;background:#0a3449;box-shadow:inset 0 0 0 1.5px #2c6a85;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:12px;font-weight:700;cursor:pointer;position:relative;transition:transform .1s}
+.slot:hover{transform:translateY(-2px)}
+.slot svg{width:46px;height:46px}
+.slot.empty{background:transparent;box-shadow:inset 0 0 0 1.5px #2c6a8566;border:0;color:#4f7f8f;cursor:default;font-weight:500}
+.slot.empty:hover,.slot.lock:hover{transform:none}
+.slot.lock{background:repeating-linear-gradient(45deg,#06202c,#06202c 6px,#082736 6px,#082736 12px);box-shadow:inset 0 0 0 1px #1d4a5e;color:#4f7f8f;cursor:default;font-size:10px;font-weight:500;text-align:center}
+.slot.sel{box-shadow:inset 0 0 0 2.5px #5ff0ff,0 0 18px #5ff0ff55}
+.slot .k{position:absolute;top:5px;left:8px;font-size:10px;color:#8fc3d3}
+.detail{display:flex;gap:14px;align-items:center;padding:12px 14px;border-radius:14px;background:#0a3449;box-shadow:inset 0 0 0 1px #5ff0ff55}
+.detail svg{width:64px;height:64px;flex:none}
+.detail .tx{flex:1}.detail .tx b{font-size:16px}.detail .tx div{font-size:12px;color:#a9d3df}
+.acts{display:flex;flex-direction:column;gap:6px}
+.btn{border:0;border-radius:10px;padding:9px 14px;font:800 13px system-ui,sans-serif;cursor:pointer;background:#1d5f7c;color:#eaffff;white-space:nowrap}
+.btn:hover{filter:brightness(1.15)}.btn:disabled{opacity:.38;cursor:default;filter:none}
+.btn.gold{background:linear-gradient(#e8b84a,#b07d1c);color:#2a1a00}
+.btn.dim{background:#123d52}
+.upgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.upg{border-radius:14px;background:#0a3449;padding:12px;display:grid;grid-template-columns:44px 1fr;gap:4px 12px;align-items:center}
+.upg svg{width:44px;height:44px;grid-row:span 2}
+.upg b{font-size:15px}
+.pips{display:flex;gap:4px}.pips i{width:16px;height:6px;border-radius:3px;background:#1d4a5e}.pips i.on{background:#5ff0ff;box-shadow:0 0 5px #5ff0ff88}
+.upg .nx{grid-column:1/-1;font-size:12px;color:#a9d3df;display:flex;justify-content:space-between;gap:8px;margin-top:6px}
+.upg .nx em{font-style:normal;color:#7ff0c8;font-weight:800}
+.upg .btn{grid-column:1/-1;margin-top:6px}
+.dex{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.dexc{border-radius:14px;background:#0a3449;padding:10px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;position:relative}
+.dexc svg{width:56px;height:56px}
+.dexc b{font-size:13px}.dexc small{font-size:11px;color:#9cc9d8;line-height:1.4}
+.dexc .cnt{position:absolute;top:6px;right:8px;font-size:11px;color:#8fc3d3;font-weight:800}
+.dexc .dg{position:absolute;top:6px;left:8px;font-size:10px;font-weight:900;color:#ff8080}
+.dexc.unk{opacity:.55}
+.pearl{color:#ffe9a8;font-weight:800}
+.inp{background:#0a2a3a;color:#fff;border:1px solid #2e6b80;border-radius:10px;padding:9px 11px;font:inherit;font-size:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .card{background:#06283a;border-radius:14px;padding:14px 16px;box-shadow:inset 0 0 0 1px #2c6a85}
 .card h3{margin:0 0 8px;font-size:14px;color:#8fe4ff;letter-spacing:.08em}
-.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
-.up{background:#0a3449;border-radius:10px;padding:10px 12px;display:grid;gap:4px}
-.up b{font-size:14px}.up small{color:#9cc9d8}
 button{border:0;border-radius:9px;padding:9px 14px;font:700 14px system-ui,sans-serif;cursor:pointer;background:#1d5f7c;color:#eaffff}
 button:hover{filter:brightness(1.15)}button:disabled{opacity:.4;cursor:default;filter:none}
-#go{background:linear-gradient(#5ff0ff,#1ab0d6);color:#03303e;font-size:18px;padding:12px 30px}
-.pearl{color:#ffe9a8;font-weight:800}
-.inp{background:#0a2a3a;color:#fff;border:1px solid #2e6b80;border-radius:8px;padding:7px 9px;font:inherit;font-size:14px}
 .sp{display:flex;gap:10px;align-items:center;background:#0a3449;border-radius:10px;padding:8px 12px}
 .sp i{width:26px;height:26px;border-radius:50%;flex:none}
-#res{position:fixed;inset:0;display:grid;place-items:center;background:#021018cc}
+.howto{font-size:13px;color:#b9dbe6;line-height:1.75}
+.howto kbd{display:inline-block;min-width:18px;padding:0 6px;border-radius:5px;background:#0a3449;box-shadow:inset 0 -2px 0 #02141c,0 0 0 1px #2c6a85;font:700 12px system-ui;color:#e8fbff;text-align:center}
+/* result */
+#res{position:fixed;inset:0;display:grid;place-items:center;background:radial-gradient(circle at 50% 30%,#0b3a52aa,#020c13ee)}
+.rpanel{width:min(620px,92vw);max-height:90vh;overflow:auto;border-radius:20px;background:#06283a;box-shadow:inset 0 0 0 1.5px #2c6a85,0 20px 60px #000a}
+.rhead{padding:22px 24px 16px;text-align:center;border-radius:20px 20px 0 0;background:linear-gradient(#0d4560,#06283a)}
+.rhead.win{background:linear-gradient(#5a4310,#06283a)}.rhead.fail{background:linear-gradient(#5a1620,#06283a)}
+.rhead h2{margin:0;font-size:28px;font-weight:900;letter-spacing:.12em}
+.rgold{display:inline-flex;align-items:center;gap:8px;margin-top:10px;font-size:30px;font-weight:900;color:#ffe9a8}
+.rgold svg{width:30px;height:30px}
+.rbody{padding:4px 24px 22px}
+.rline{font-size:13px;color:#cfe7ee;padding:7px 0;border-bottom:1px solid #2c6a8544}
+.pend{display:flex;gap:12px;align-items:center;padding:10px 12px;margin-top:8px;border-radius:14px;background:#0a3449}
+.pend svg{width:48px;height:48px;flex:none}
+.pend .tx{flex:1;min-width:0}.pend .tx b{font-size:14px}.pend .tx div{font-size:11px;color:#9cc9d8}
+.seg{display:flex;border-radius:10px;overflow:hidden;box-shadow:0 0 0 1px #2c6a85}
+.seg button{border-radius:0;padding:8px 10px;font-size:12px;background:#0d3a50;color:#a9d3df}
+.seg button.on{background:#5ff0ff;color:#03303e}
+.seg button.on.sell{background:#e8b84a;color:#2a1a00}
+#rOk{width:100%;margin-top:16px;border-radius:12px;padding:13px;font-size:17px;font-weight:900;background:linear-gradient(#7ff6ff,#17a9d2);color:#022a38}
+@media (max-width:820px){.hub{grid-template-columns:1fr;overflow:auto}.col{min-height:auto}.pane{min-height:420px}}
 #err{position:fixed;inset:0;display:none;place-items:center;text-align:center;padding:20px;font-size:16px}
 </style>
 </head>
@@ -69,24 +149,31 @@ button:hover{filter:brightness(1.15)}button:disabled{opacity:.4;cursor:default;f
 <div class="hud" id="hint"></div>
 <div class="hud" id="help">WASD 泳ぐ · Shift 急ぐ · ドラッグ 光の輪 · 1〜5 能力 · 右クリック 逃がす · E 浮上 · R 緊急ブイ · F 仲間に酸素</div>
 <div id="base">
-  <div class="panel">
-    <div class="h1">ディープ・レンジャー<small>試作 · 光の輪で生き物を捕まえ、その力で深海へ</small></div>
-    <div class="card"><h3>ミッション</h3><div id="bMis"></div><div class="row" style="margin-top:10px"><button id="go">潜る</button><span>所持金 <span class="pearl" id="bPearl"></span> G</span></div></div>
-    <div class="card" id="mpCard"><h3>マルチプレイ（2〜4人・協力）</h3>
-      <div class="row"><input id="mpName" class="inp" placeholder="なまえ" maxlength="8" style="width:110px"><button id="mpHost">部屋を作る</button><input id="mpCode" class="inp" placeholder="コード" maxlength="4" style="width:80px;text-transform:uppercase"><button id="mpJoin">参加する</button></div>
-      <div id="mpSt" style="font-size:13px;color:#b9dbe6;margin-top:8px">ひとりで遊ぶときはそのまま「潜る」。友達と遊ぶときは、1人が部屋を作り、ほかの人はコードを入れて参加。</div></div>
-    <div class="card"><h3>準備（次の潜水に連れて行く生き物）</h3><div id="bPrep"></div></div>
-    <div class="card"><h3>強化（ゴールドをつかう）</h3><div class="grid" id="bUp"></div></div>
-    <div class="card"><h3>道具</h3><div class="grid" id="bItem"></div></div>
-    <div class="card"><h3 id="bDexT">図鑑</h3><div class="grid" id="bAq"></div></div>
-    <div class="card"><h3>遊び方</h3><div style="font-size:13px;color:#b9dbe6">
-      WASDで泳ぎます（Wが深い方向）。生き物の近くで<b>ドラッグを始め、点線の輪に沿ってぐるっとなぞる</b>と、なぞった分だけ光の弧が伸びます。1周するごとに1回分。必要な周回数で捕獲できます。描いている間は時間がゆっくり流れます。カニ・マンタ・ハリセンボンは暴れるので、線に触れられると切れます。サメに触れると酸素が減ります。<br>
-      捕まえた生き物は数字キー（または左下のアイコン）で力を借ります。使った生き物は海に帰ります。<br>
-      酸素がなくなる前に、スタート地点の光るブイ（<b>E</b>で浮上）まで戻りましょう。戻れないと、カプセルの生き物と拾った物の半分を失います。
-    </div><div class="row" style="margin-top:8px"><button id="reset" style="background:#3a1d24">記録を消す</button></div></div>
+  <div class="topbar">
+    <div class="logo"><b>ディープ・レンジャー</b><small>DEEP RANGER</small></div>
+    <div class="chap" id="bChap"></div>
+    <div class="spacer"></div>
+    <div class="badge alt" id="bBuoy"></div>
+    <div class="badge" id="bGold"></div>
   </div>
+  <div class="hub">
+    <div class="col">
+      <div class="quest" id="bQuest"></div>
+      <div class="divebox">
+        <div id="bCarry"></div>
+        <div class="stats" id="bStats"></div>
+        <button id="go">潜る</button>
+        <div class="gohint" id="goHint">Enterキーでも出発</div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="tabs" id="bTabs"></div>
+      <div class="pane" id="bPane"></div>
+    </div>
+  </div>
+  <div id="mpCard" class="hidden"><input id="mpName" class="inp" placeholder="なまえ" maxlength="8" style="width:130px"><button id="mpHost" class="btn">部屋を作る</button><input id="mpCode" class="inp" placeholder="コード" maxlength="4" style="width:90px;text-transform:uppercase"><button id="mpJoin" class="btn">参加する</button><div id="mpSt"></div><button id="reset" class="btn dim">記録を消す</button></div>
 </div>
-<div id="res" class="hide"><div class="card" style="min-width:300px;max-width:90vw"><h3 id="rT"></h3><div id="rB"></div><div class="row" style="margin-top:12px"><button id="rOk">拠点にもどる</button></div></div></div>
+<div id="res" class="hide"><div class="rpanel"><div class="rhead" id="rHead"><h2 id="rT"></h2><div class="rgold" id="rG"></div></div><div class="rbody"><div id="rB"></div><button id="rOk">港にもどる</button></div></div></div>
 <div id="err"></div>
 <script>
 (async () => {
@@ -120,7 +207,7 @@ const pathX = z => 16 * sin(z * .012) + 7 * sin(z * .031 + 1);
 const halfW = z => { let w = 40; w = lerp(w, 7.5, sstep(86, 98, z)); w = lerp(w, 29 + 5 * sin(z * .05), sstep(116, 128, z)); w = lerp(w, 5.5, sstep(230, 240, z)); w = lerp(w, 19 + 3 * sin(z * .07), sstep(254, 266, z)); w = lerp(w, 4.5, sstep(382, 392, z)); w = lerp(w, 44 + 6 * sin(z * .04), sstep(410, 432, z)); return w };
 const COVES = [[-50, 50, 21, "西の入り江"], [48, 170, 18, "光る洞"], [-46, 202, 16, "カメの寝床"], [34, 322, 16, "深海の窪み"]].map(([dx, z, r, n]) => ({ x: pathX(z) + dx, z, r, name: n }));
 const smin = (a, b, k) => { const h = max(k - abs(a - b), 0) / k; return min(a, b) - h * h * k * .25 };
-const Z_ABYSS = 420, Z_BOSS = 500;
+const Z_ABYSS = 420, Z_BOSS = 500, BUOY_Z = 18;
 const floorD = z => z < 92 ? lerp(10, 17, clamp(z / 92, 0, 1)) : z < 236 ? lerp(17, 30, (z - 92) / 144) : z < 388 ? lerp(30, 74, clamp((z - 236) / 140, 0, 1)) : z < Z_ABYSS ? lerp(74, 84, (z - 388) / 32) : lerp(84, 110, clamp((z - Z_ABYSS) / 70, 0, 1));
 const heightAt = (x, z) => {
   let t = abs(x - pathX(z)) - halfW(z);
@@ -129,7 +216,7 @@ const heightAt = (x, z) => {
   let y = -floorD(z) + (fbm(x * .08, 1, z * .08) - .5) * 2.4 + .35 * sin(x * .7 + z * .25 + fbm(x * .2, 4, z * .2) * 3) * sstep(0, -5, t);
   y += 3.5 * max(0, fbm(x * .06, 3, z * .06) - .58) * 6 * sstep(-2, -10, t) * sstep(130, 90, z);
   y += lerp(24, 42, sstep(400, 430, z)) * sstep(0, 7, t) + 7 * fbm(x * .07, 2, z * .07) * sstep(2, 12, t);
-  y += 34 * sstep(-3, -11, z) + 44 * sstep(548, 558, z);
+  y += 34 * sstep(-6, -14, z) + 44 * sstep(548, 558, z);
   y -= 6 * exp(-(pow(x - pathX(Z_BOSS), 2) + pow(z - Z_BOSS, 2)) / 900);
   return y;
 };
@@ -143,12 +230,12 @@ const SPECIES = {
   jelly: { name: "ヒカリクラゲ", loops: 2, color: "#9ff4ff", ability: "照らす：45秒、まわりが明るくなる", range: 30, pearls: 8 },
   turtle: { name: "ウミガメ", loops: 3, color: "#8fe08a", ability: "帰還：すぐに浮上して帰る", range: 12, pearls: 18 },
   manta: { name: "ナガレマンタ", loops: 3, color: "#8fa8ff", ability: "乗る：25秒、速く泳ぎ海流に負けない", range: 8, pearls: 15, wild: true },
-  puffer: { name: "ハリセンボン", loops: 2, color: "#ff4d4d", ability: "威嚇：30秒、危険な生き物が逃げていく", range: 30, pearls: 10, wild: true, danger: 8 },
-  crab: { name: "イワクダキガニ", loops: 2, color: "#ff4d4d", ability: "砕く：近くの大岩を壊す", range: 14, pearls: 10, wild: true, danger: 8 },
+  puffer: { name: "ハリセンボン", loops: 2, color: "#ff4d4d", ability: "威嚇：30秒、危険な生き物が逃げていく", range: 30, pearls: 26, wild: true, danger: 8 },
+  crab: { name: "イワクダキガニ", loops: 2, color: "#ff4d4d", ability: "砕く：近くの大岩を壊す", range: 14, pearls: 26, wild: true, danger: 8 },
   isopod: { name: "ダイオウグソクムシ", loops: 2, color: "#d4dbe8", ability: "鎧：40秒、受けるダメージが半分", range: 10, pearls: 14 },
-  angler: { name: "チョウチンアンコウ", loops: 3, color: "#ff4d4d", ability: "灯り：60秒、深海を広く照らす（巨影も照らせる）", range: 40, pearls: 22, wild: true, danger: 10 },
-  squid: { name: "ダイオウイカ（光る巨影）", loops: 6, color: "#ff3df0", ability: "墨の帳：40秒、危険な生き物に襲われない", range: 30, pearls: 150, danger: 22, legend: true },
-  shark: { name: "サメ", loops: 4, color: "#ff2e2e", ability: "護衛：40秒、そばを泳いで危険な生き物を追い払う", range: 25, pearls: 35, wild: true, danger: 20 },
+  angler: { name: "チョウチンアンコウ", loops: 3, color: "#ff4d4d", ability: "灯り：60秒、深海を広く照らす（巨影も照らせる）", range: 40, pearls: 48, wild: true, danger: 10 },
+  squid: { name: "ダイオウイカ（光る巨影）", loops: 6, color: "#ff3df0", ability: "墨の帳：40秒、危険な生き物に襲われない", range: 30, pearls: 260, danger: 22, legend: true },
+  shark: { name: "サメ", loops: 4, color: "#ff2e2e", ability: "護衛：40秒、そばを泳いで危険な生き物を追い払う", range: 25, pearls: 75, wild: true, danger: 20 },
 };
 const UPG = {
   tank: { name: "酸素タンク", costs: [30, 60, 100], val: l => [100, 140, 180, 230][l], fmt: v => `酸素 ${v}` },
@@ -159,12 +246,12 @@ const UPG = {
 };
 const MISSIONS = [
   { title: "アワガイを2匹つれて帰る", hint: "浅瀬の白い貝を、光の輪で囲んで捕まえよう（1周でOK）。", reward: 25, check: r => r.banked.clam >= 2 },
-  { title: "ケルプの森の宝箱をとってくる", hint: "狭い谷の強い海流は、マンタに乗れば越えられる。マンタは3周囲む必要があり、暴れるので注意。", reward: 50, check: r => r.items.chest },
+  { title: "ケルプの森の宝箱をとってくる", hint: "狭い谷の強い海流は、マンタに乗れば越えられる。マンタは大きいので何周か必要。暴れるので注意。", reward: 50, check: r => r.items.chest },
   { title: "ウミガメを連れて帰る", hint: "脇道の入り江「カメの寝床」にいる。ウミガメの力を使えば、その場からすぐ帰れる（使うとカメは海に帰るので、連れて帰るなら緊急ブイかブイから浮上）。", reward: 40, check: r => r.banked.turtle >= 1 },
   { title: "海溝の沈没船から航海日誌を回収する", hint: "大岩はカニで砕き、暗い海溝はクラゲで照らそう。深さ42mより下は耐圧スーツが必要。", reward: 120, check: r => r.items.log },
   { ch: 2, title: "海溝の裂け目の先「深淵」にたどり着く", hint: "沈没船の奥、岩の裂け目を抜けた先。深さ80mより下は耐圧スーツLv2（120m）が必要。たどり着いたら無事に帰還しよう。", reward: 60, check: r => r.abyss },
   { ch: 2, title: "チョウチンアンコウを連れて帰る", hint: "深淵の暗闇で灯りを揺らしている。近づきすぎると噛みつくので注意（赤い印）。", reward: 70, check: r => r.banked.angler >= 1 },
-  { ch: 2, title: "光る巨影を捕まえて連れて帰る", hint: "巨影は暗闇では囲めない。クラゲかアンコウの光で照らしている間に6周。赤い帯は触手の薙ぎ払い、帯の外へ逃げよう。墨を吐かれたら光で対抗。", reward: 300, check: r => r.banked.squid >= 1 },
+  { ch: 2, title: "光る巨影を捕まえて連れて帰る", hint: "巨影は暗闇では囲めない。クラゲかアンコウの光で照らしている間に囲んで捕獲ゲージを100%に。赤い帯は触手の薙ぎ払い、帯の外へ逃げよう。墨を吐かれたら光で対抗。", reward: 300, check: r => r.banked.squid >= 1 },
 ];
 const LOG_TEXT = "『…海溝のさらに奥、岩の裂け目の向こうで、船より大きな光る影がゆっくりと動いていた。あれは魚ではない。我々は引き返したが、あの光はまだ目に焼きついている』";
 const newReq = () => { const pool = Object.keys(SPECIES).filter(k => k !== "clam" && !SPECIES[k].legend); const sp = pool[rand() * pool.length | 0], n = SPECIES[sp].loops >= 3 ? 1 : 2; return { sp, n, reward: 15 + SPECIES[sp].pearls * n } };
@@ -769,7 +856,7 @@ function buildDeco(sd) {
   const wx = pathX(Z_WRECK), wy = floorAt(wx, Z_WRECK);
   add("wreck", wx, wy - .8, Z_WRECK, 1, .35, .12, [.9, .9, .9]);
   for (const [dx, z] of [[-22, 448], [18, 470], [-12, 525], [26, 530]]) { const x = pathX(z) + dx, y = floorAt(x, z); add("vent", x, y - .3, z, 1, rand() * TAU, 0, [1, 1, 1], 0, 14); for (let k = 0; k < 14; k++) { const a = rand() * TAU, r = rb(1.6, 4), xx = x + cos(a) * r, zz = z + sin(a) * r; add("branch" + (k % 2), xx, floorAt(xx, zz), zz, rb(.5, 1), undefined, 0, [1, .25, .2], .35) } }
-  add("buoy", pathX(2) + 4, floorAt(pathX(2) + 4, 2), 2, 1, 0, 0, [1, 1, 1], .08);
+  add("buoy", pathX(BUOY_Z) + 4, floorAt(pathX(BUOY_Z) + 4, BUOY_Z), BUOY_Z, 1, 0, 0, [1, 1, 1], .08);
   // blades: seagrass in shallows, kelp in the forest
   const blades = [];
   for (let k = 0; k < 2200; k++) { const z = rb(-2, 92), x = inValley(z, .85), y = floorAt(x, z); if (fbm(x * .08, 9, z * .08) < .5) continue; for (let b = 0; b < 8; b++) blades.push(x + rb(-.6, .6), y - .05, z + rb(-.6, .6), rb(.35, .95), rand() * TAU, rb(.1, .5), rb(.04, .07), rand()) }
@@ -835,7 +922,7 @@ function newDive(sdIn) {
   if (W) { dive.creatures = W.creatures; dive.sharks = W.sharks; dive.boulder = W.boulder; dive.t = W.t; NET.world = null }
   dive.boss = dive.creatures.find(c => c.sp === "squid"); dive.parts = []; dive.down = 0; NET.sendT = 0;
   dive.o2 = dive.o2max; dive.stMax = 100 + save.up.fin * 25; dive.st = dive.stMax; dive.stIdle = 0; dive.tired = false;
-  diver.p = [pathX(4), floorAt(pathX(4), 4) + 2.6, 4]; diver.v = [0, 0, 0]; diver.yaw = 0;
+  diver.p = [pathX(BUOY_Z + 6), floorAt(pathX(BUOY_Z + 6), BUOY_Z + 6) + 2.6, BUOY_Z + 6]; diver.v = [0, 0, 0]; diver.yaw = 0;
   trail = []; state = "dive"; resetMap(); capT = null;
   $("base").classList.add("hide"); setHud(true); renderCaps();
   flash(MISSIONS[save.mission] ? "ミッション：" + MISSIONS[save.mission].title : "自由に潜ろう");
@@ -939,9 +1026,9 @@ function onMsg(m) {
     case "snap": if (!NET.sea || NET.sd !== m.sd) { NET.sea = true; NET.sd = m.sd; if (state === "base") mpRender() } netApplySnap(m); break;
     case "me": if (NET.host && P) { Object.assign(P, m); if (P.fx) P.fx.bubbles = [] } break;
     case "left": NET.players.delete(m.id); break;
-    case "loop": if (NET.host && dive && state === "dive") { const c = dive.creatures[m.i]; if (!c || !c.alive) break; c.loops++; c.agit = 6; (c.help ||= new Set()).add(m.from);
-      if (c.loops >= SPECIES[c.sp].loops) { c.alive = false; c.deadT = 0; netSend(m.from, { t: "cap", i: m.i }); for (let k = 0; k < 14; k++) dive.fx.bubbles.push({ p: c.p.slice(), v: [rb(-1, 1), rb(.5, 2), rb(-1, 1)], t: 0, life: 1.2, col: [1, .95, .6] }); if (SPECIES[c.sp].legend) flash(`${P ? P.name : "仲間"}が${SPECIES[c.sp].name}を捕まえた！`); shareParts(c, m.from) } } break;
-    case "brk": if (NET.host && dive) { const c = dive.creatures[m.i]; if (c) c.loops = max(0, c.loops - 1) } break;
+    case "loop": if (NET.host && dive && state === "dive") { const c = dive.creatures[m.i]; if (!c || !c.alive) break; c.loops = min(100, c.loops + (m.dmg || 20)); c.agit = 6; (c.help ||= new Set()).add(m.from);
+      if (c.loops >= 100) { c.alive = false; c.deadT = 0; netSend(m.from, { t: "cap", i: m.i }); for (let k = 0; k < 14; k++) dive.fx.bubbles.push({ p: c.p.slice(), v: [rb(-1, 1), rb(.5, 2), rb(-1, 1)], t: 0, life: 1.2, col: [1, .95, .6] }); if (SPECIES[c.sp].legend) flash(`${P ? P.name : "仲間"}が${SPECIES[c.sp].name}を捕まえた！`); shareParts(c, m.from) } } break;
+    case "brk": if (NET.host && dive) { const c = dive.creatures[m.i]; if (c) c.loops = max(0, round(c.loops - 50 / SPECIES[c.sp].loops)) } break;
     case "cap": if (dive && state === "dive") { const c = dive.creatures[m.i]; if (!c) break; c.alive = false; if (dive.caps.length < dive.capsMax) dive.caps.push(c.sp); renderCaps(); sfx("capture"); if (capT === c) capT = null; flash(SPECIES[c.sp].name + "を捕まえた"); if (c.sp === "squid") shakeT = .6; const s = project(c.p); if (s) pop(s, SPECIES[c.sp].name + " ゲット！", "#fff3a0") } break;
     case "part": addPart(m.sp); break;
     case "hit": if (dive && state === "dive") { hit(m.dmg, m.text, { p: [m.sx, 0, m.sz] }, m.kb); if (m.boss && capT === dive.boss && trail.length > 2) { const s = project(dive.boss.p); if (s) breakLine(dive.boss, s) } } break;
@@ -984,11 +1071,11 @@ function tryRescue() {
 function netLobby() { NET.lobby = [NET.name + "（ホスト）", ...[...NET.players.values()].map(P => P.name)]; netSend("*", { t: "lobby", list: NET.lobby }); mpRender() }
 function mpRender() {
   const go = $("go");
-  if (!NET.on) { go.disabled = false; go.textContent = "潜る"; return }
+  if (!NET.on) { go.disabled = false; go.textContent = "潜る"; $("goHint").textContent = "Enterキーでも出発"; if (!$("mpSt").textContent) mpSt("ひとりで遊ぶときはそのまま「潜る」。"); return }
   const host = NET.host;
   mpSt(`部屋コード <b style="font-size:20px;letter-spacing:3px;color:#fff3a0">${NET.code}</b>　メンバー：${NET.lobby.join("・") || NET.name}<br>${host ? "友達にこのページのURLとコードを送ろう。全員そろったら「みんなで潜る」。ホストはこのページを閉じないでね（海の計算をしている）。" : "ホストが「潜る」を押すと一緒に出発します。途中からでも、海が続いていれば入れます。"}`);
   const sea = host ? !!NET.world : NET.sea;
-  go.disabled = !host && !sea; go.textContent = sea ? "みんなの海にもどる" : host ? "みんなで潜る" : "ホスト待ち";
+  go.disabled = !host && !sea; go.textContent = sea ? "みんなの海へ" : host ? "みんなで潜る" : "ホスト待ち…"; $("goHint").textContent = `部屋 ${NET.code} · ${NET.lobby.length || 1}人`;
   if (sea) $("mpSt").insertAdjacentHTML("beforeend", `<div style="color:#7ff0c8;margin-top:4px">仲間がまだ潜っている。「みんなの海にもどる」で同じ海に入れる。</div>`);
   $("mpHost").disabled = $("mpJoin").disabled = true;
 }
@@ -1028,18 +1115,18 @@ addEventListener("contextmenu", e => { if (state === "dive") e.preventDefault() 
 addEventListener("keydown", e => { keys[e.code] = true; if (state !== "dive") return; if (e.code >= "Digit1" && e.code <= "Digit5") useCap(+e.code[5] - 1); if (e.code === "KeyE") tryAscend(); if (e.code === "KeyR") useBuoy(); if (e.code === "KeyF") keyF(); if (e.code === "Space") e.preventDefault() });
 addEventListener("keyup", e => keys[e.code] = false);
 addEventListener("blur", () => { for (const k in keys) keys[k] = false });
-let trail = [], drawing = false, capT = null, capAcc = 0, capLast = null, capWarn = 0, capQ = 0;
+let trail = [], drawing = false, capT = null, capAcc = 0, capLast = null, capWarn = 0, capQ = 0, capRs = [];
 const bodyR = (c, s) => max(12, s.r * ({ squid: 4.2, angler: .8, isopod: .6, shark: 1.5, manta: 1.3, turtle: 1.1, clam: .55, crab: .75, jelly: .7, puffer: .6, seahorse: .45, clown: .45 }[c.sp] || .7));
 const guideR = (c, s) => max(48, bodyR(c, s) * 2.1);
 ov.addEventListener("pointerdown", e => {
   if (state !== "dive" || dive.down > 0) return; audio(); ov.setPointerCapture(e.pointerId); drawing = true;
-  const p = { x: e.clientX, y: e.clientY, t: performance.now() }; trail = [p]; capAcc = 0; capLast = null; capQ = 0;
+  const p = { x: e.clientX, y: e.clientY, t: performance.now() }; trail = [p]; capAcc = 0; capLast = null; capQ = 0; capRs = [];
   let best = null, bd = 1e9;
   for (const c of dive.creatures) { if (!c.alive) continue; const s = project(c.p); if (!s) continue; const d = hypot(s.x - p.x, s.y - p.y); if (d < max(220, guideR(c, s) * 1.6) && d < bd && dist3(c.p, diver.p) < (c.sp === "squid" ? 50 : dive.light[1] + 15)) { bd = d; best = c } }
   capT = best;
 });
 ov.addEventListener("pointermove", e => { if (!drawing) return; const l = trail[trail.length - 1], p = { x: e.clientX, y: e.clientY, t: performance.now() }; if (hypot(p.x - l.x, p.y - l.y) < 4) return; trail.push(p); trackLoop(p) });
-const endDraw = () => { drawing = false; capAcc = 0; capLast = null };
+const endDraw = () => { drawing = false; capAcc = 0; capLast = null; capRs = [] };
 ov.addEventListener("pointerup", endDraw); ov.addEventListener("pointercancel", endDraw);
 function trackLoop(p) {
   const c = capT; if (!c || !c.alive) return;
@@ -1047,12 +1134,15 @@ function trackLoop(p) {
   if (dist3(c.p, diver.p) > (c.sp === "squid" ? 45 : dive.light[1])) { capWarn = .6; capWarnText = "遠すぎる（もっと近づこう）"; capLast = null; return }
   const dx = p.x - s.x, dy = p.y - s.y, d = hypot(dx, dy);
   if (c.sp === "squid" && !isLit(c)) { capWarn = .6; capWarnText = "暗くて囲めない！クラゲかアンコウの光で照らそう"; capLast = null; return }
-  if (d < bodyR(c, s) * 1.15) { capWarn = .6; capWarnText = "近すぎる！点線の外側をなぞろう"; capLast = null; return }
+  const br = bodyR(c, s), close = d < br * 1.15;
+  if (close) { capWarn = .4; capWarnText = "近すぎ（ダメージが減る）" }
+  if (d < br * .35) { capLast = null; return }
+  capRs.push(d / guideR(c, s), close ? 1 : 0);
   const ang = atan2(dy, dx);
   if (capLast !== null) { let da = ang - capLast; da = ((da + PI) % TAU + TAU) % TAU - PI; capAcc += da }
   capLast = ang;
   const q = floor(abs(capAcc) / (TAU / 4)); if (q > capQ) { capQ = q; sfx("tick", q / 4) }
-  if (abs(capAcc) >= TAU) { capAcc -= sign(capAcc) * TAU; capQ = 0; loopDone(c, s) }
+  if (abs(capAcc) >= TAU) { capAcc -= sign(capAcc) * TAU; capQ = 0; const q = loopQuality(); capRs = []; loopDone(c, s, q) }
 }
 let capWarnText = "";
 ov.addEventListener("wheel", e => { e.preventDefault(); zoom = clamp(zoom * exp(e.deltaY * .001), .6, 1.8) }, { passive: false });
@@ -1060,15 +1150,26 @@ let zoom = 1;
 
 // ================= capture: trace around a creature; each full turn counts =================
 const dist3 = (a, b) => hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);
-function loopDone(c, s) {
-  const need = SPECIES[c.sp].loops;
+// how clean was the loop? round (radius steady), near the dotted ring, not over the body
+function loopQuality() {
+  const n = capRs.length / 2; if (n < 4) return .6;
+  let m = 0, cl = 0; for (let i = 0; i < capRs.length; i += 2) { m += capRs[i]; cl += capRs[i + 1] } m /= n; cl /= n;
+  let v = 0; for (let i = 0; i < capRs.length; i += 2) v += (capRs[i] - m) ** 2; const cv = sqrt(v / n) / m;
+  const round_ = clamp(1 - cv * 2.4, 0, 1), size = m > 1.7 ? clamp(1 - (m - 1.7) / 2.5, .45, 1) : 1;
+  return clamp((.45 + 1.1 * round_) * size * (1 - .55 * cl), .3, 1.55);
+}
+const GRADE = q => q >= 1.3 ? ["パーフェクト！", "#fff3a0"] : q >= 1 ? ["きれい！", "#bff6ff"] : q >= .7 ? ["OK", "#d6f2ff"] : ["ぎこちない…", "#c9b9b9"];
+const loopDmg = (c, q) => max(4, round(100 / SPECIES[c.sp].loops * q));
+function loopDone(c, s, q = 1) {
+  const dmg = loopDmg(c, q), [gt, gc] = GRADE(q);
+  loopFx.push({ x: s.x, y: s.y, r: guideR(c, s), t: 0 });
   if (NET.on && !NET.host) {
-    if (c.loops + 1 >= need && dive.caps.length >= dive.capsMax) { pop(s, "カプセルがいっぱい", "#ffb0a0"); return }
-    c.loops++; loopFx.push({ x: s.x, y: s.y, r: guideR(c, s), t: 0 }); netSend("host", { t: "loop", i: dive.creatures.indexOf(c) });
-    if (c.loops < need) { pop(s, `${c.loops} / ${need}`, "#bff6ff"); sfx("loop") } return;
+    if (c.loops + dmg >= 100 && dive.caps.length >= dive.capsMax) { pop(s, "カプセルがいっぱい", "#ffb0a0"); return }
+    c.loops = min(100, c.loops + dmg); netSend("host", { t: "loop", i: dive.creatures.indexOf(c), dmg });
+    if (c.loops < 100) { pop(s, `${gt} +${dmg}%（${c.loops}%）`, gc); sfx("loop", q) } return;
   }
-  c.loops++; c.agit = 6; loopFx.push({ x: s.x, y: s.y, r: guideR(c, s), t: 0 }); (c.help ||= new Set()).add("me");
-  if (c.loops >= need) { capture(c, s); if (!c.alive) shareParts(c, "me") } else { pop(s, `${c.loops} / ${need}`, "#bff6ff"); sfx("loop") }
+  c.loops = min(100, c.loops + dmg); c.agit = 6; (c.help ||= new Set()).add("me");
+  if (c.loops >= 100) { capture(c, s); if (!c.alive) shareParts(c, "me") } else { pop(s, `${gt} +${dmg}%（${c.loops}%）`, gc); sfx("loop", q) }
 }
 const PART = { manta: "マンタのヒレ", turtle: "ウミガメの甲羅のかけら", shark: "サメの歯", angler: "アンコウの灯り玉", squid: "巨影の触手" };
 function shareParts(c, capturer) {
@@ -1081,7 +1182,7 @@ function addPart(sp) {
   flash(`協力ボーナス：「${PART[sp] || SPECIES[sp].name + "のかけら"}」を手に入れた（売値 ${floor(SPECIES[sp].pearls / 2)}G）`);
 }
 function capture(c, s) {
-  if (dive.caps.length >= dive.capsMax) { pop(s, "カプセルがいっぱい", "#ffb0a0"); c.loops = SPECIES[c.sp].loops - 1; return }
+  if (dive.caps.length >= dive.capsMax) { pop(s, "カプセルがいっぱい", "#ffb0a0"); c.loops = 99; return }
   if (c.sp === "squid") { flash("光る巨影――ダイオウイカを捕まえた！"); shakeT = .6 }
   c.alive = false; c.deadT = 0; dive.caps.push(c.sp); renderCaps(); sfx("capture"); if (capT === c) capT = null; save.tut = (save.tut || 0) + 1;
   pop(s, SPECIES[c.sp].name + " ゲット！", "#fff3a0"); flash(SPECIES[c.sp].name + "を捕まえた"); for (let k = 0; k < 14; k++) dive.fx.bubbles.push({ p: c.p.slice(), v: [rb(-1, 1), rb(.5, 2), rb(-1, 1)], t: 0, life: 1.2, col: [1, .95, .6] });
@@ -1097,7 +1198,7 @@ function hit(dmg, text, src, kb = 7) {
   $("o2w").classList.remove("shake"); void $("o2w").offsetWidth; $("o2w").classList.add("shake");
   for (let k = 0; k < (dmg >= 15 ? 18 : 8); k++) d.fx.bubbles.push({ p: diver.p.slice(), v: [rb(-2, 2), rb(1, 4), rb(-2, 2)], t: 0, life: 1.4, col: [1, .7, .7] });
 }
-function breakLine(c, s) { trail = []; drawing = false; capAcc = 0; capLast = null; c.loops = max(0, c.loops - 1); pop(s, "線が切れた！", "#ff8f8f"); sfx("break") }
+function breakLine(c, s) { trail = []; drawing = false; capAcc = 0; capLast = null; capRs = []; c.loops = max(0, round(c.loops - 50 / SPECIES[c.sp].loops)); pop(s, "線が切れた！", "#ff8f8f"); sfx("break") }
 
 // ================= abilities =================
 let ringFx = [];
@@ -1134,7 +1235,7 @@ function useCap(i) {
 }
 function useBuoy() { if (!dive || state !== "dive") return; if (!save.buoys) { flash("緊急ブイを持っていない（拠点で買える）"); sfx("warn"); return } save.buoys--; persist(); sfx("ability"); endDive(true, "buoy") }
 function tryAscend() {
-  const b = [pathX(2) + 4, 2];
+  const b = [pathX(BUOY_Z) + 4, BUOY_Z];
   if (hypot(diver.p[0] - b[0], diver.p[2] - b[1]) > 7) { flash("浮上はスタートのブイから"); return }
   endDive(true);
 }
@@ -1163,8 +1264,11 @@ function endDive(ok, how) {
   if (cleared && save.mission >= MISSIONS.length && m) lines.push(`<div style="margin-top:6px;color:#ffd0ff">第2章クリア！ 光る巨影の正体はダイオウイカだった。</div>`);
   if (false) lines.push(`<div style="margin-top:6px">第1章クリア！ここからは帰還のたびに新しい「依頼」が届く。図鑑の全種類もめざそう。<br></div>`);
   save.pearls += pearls; persist();
-  $("rT").textContent = ok ? (cleared ? "達成！" : "無事に帰還") : "強制浮上";
-  $("rB").innerHTML = lines.map(l => `<div>${l}</div>`).join("") + `<div style="margin-top:8px">獲得したゴールド <span class="pearl">${pearls} G</span></div><div id="pendL"></div>`;
+  $("rT").textContent = ok ? (cleared ? "ミッション達成！" : "無事に帰還") : "強制浮上…";
+  $("rHead").className = "rhead" + (!ok ? " fail" : cleared ? " win" : "");
+  $("rG").innerHTML = `${COIN}<span id="rGn">0</span><small style="font-size:16px">G</small>`;
+  { const t0 = performance.now(), el = $("rGn"); const tick = () => { const k = min(1, (performance.now() - t0) / 900); el.textContent = round(pearls * (1 - (1 - k) ** 3)); if (k < 1) requestAnimationFrame(tick) }; tick() }
+  $("rB").innerHTML = lines.map(l => `<div class="rline">${l}</div>`).join("") + `<div id="pendL"></div>`;
   // default choice: tank if there is room, otherwise sell
   let room = TANK_MAX - save.tank.length; for (const p of pend) p.choice = room-- > 0 ? "tank" : "sell";
   renderPend();
@@ -1174,17 +1278,16 @@ function renderPend() {
   const el = $("pendL"); if (!el) return;
   if (!pend.length) { el.innerHTML = ""; return }
   const capsMax = UPG.caps.val(save.up.caps), nCarry = pend.filter(p => p.choice === "carry").length, nTank = pend.filter(p => p.choice === "tank").length;
-  el.innerHTML = `<h3 style="margin:12px 0 6px">連れて帰った生き物をどうする？</h3>`;
-  pend.forEach((p, i) => {
-    const S = SPECIES[p.sp], row = document.createElement("div"); row.className = "sp"; row.style.marginBottom = "6px";
-    row.innerHTML = `<i style="background:${S.color}"></i><div style="flex:1"><b>${S.name}</b> <span class="pearl" style="font-size:12px">${S.pearls}G</span><div style="font-size:12px;color:#9cc9d8">${S.ability}</div></div>`;
-    for (const [k, label, okk] of [["sell", `売る +${S.pearls}G`, true], ["carry", "次も連れて行く", p.choice === "carry" || nCarry < capsMax], ["tank", "水槽で保管", p.choice === "tank" || save.tank.length + nTank < TANK_MAX]]) {
-      const b = document.createElement("button"); b.textContent = label; b.style.cssText = "padding:6px 9px;font-size:12px;margin-left:4px" + (p.choice === k ? ";background:#5ff0ff;color:#03303e" : "");
-      b.disabled = !okk; b.onclick = () => { p.choice = k; renderPend() }; row.append(b);
+  el.innerHTML = `<h4 style="margin:16px 0 4px;color:#8fe4ff;font-size:13px;letter-spacing:.08em">連れて帰った生き物 <span style="color:#6fa8b8;font-weight:500">カプセル ${save.carry.length + nCarry}/${capsMax} · 水槽 ${save.tank.length + nTank}/${TANK_MAX}</span></h4>`;
+  pend.forEach(p => {
+    const S = SPECIES[p.sp], row = document.createElement("div"); row.className = "pend";
+    row.innerHTML = `${icon(p.sp)}<div class="tx"><b>${S.name}</b><div>${S.ability}</div></div>`;
+    const seg = document.createElement("div"); seg.className = "seg";
+    for (const [k, label, okk] of [["sell", `売る ${S.pearls}G`, true], ["carry", "持って行く", p.choice === "carry" || save.carry.length + nCarry < capsMax], ["tank", "水槽へ", p.choice === "tank" || save.tank.length + nTank < TANK_MAX]]) {
+      const b = document.createElement("button"); b.textContent = label; b.className = (p.choice === k ? "on " : "") + k; b.disabled = !okk; b.onclick = () => { p.choice = k; renderPend(); sfx("tick", 1) }; seg.append(b);
     }
-    el.append(row);
+    row.append(seg); el.append(row);
   });
-  el.insertAdjacentHTML("beforeend", `<div style="font-size:12px;color:#9cc9d8">カプセル ${nCarry}/${capsMax} · 水槽 ${save.tank.length + nTank}/${TANK_MAX}</div>`);
 }
 $("rOk").onclick = () => {
   for (const p of pend) { if (p.choice === "sell") save.pearls += SPECIES[p.sp].pearls; else if (p.choice === "carry") save.carry.push(p.sp); else save.tank.push(p.sp) }
@@ -1202,7 +1305,7 @@ const steep = (x, z, cx, cz) => { const nf = floorAt(x, z), cf = floorAt(cx, cz)
 function blocked(x, z, cx, cz) {
   if (steep(x, z, cx, cz)) return true;
   if (dive.boulder.alive) { const [bx, bz] = boulderPos(); if (hypot(x - bx, z - bz) < 7) return true }
-  return z < -6 || z > 552 || x < X0 + 2 || x > X1 - 2;
+  return z < BUOY_Z - 7 || z > 552 || x < X0 + 2 || x > X1 - 2;
 }
 function step(dt) {
   const d = dive; d.t += dt;
@@ -1407,7 +1510,7 @@ function lights() {
     if (dive.fx.lure > 0) L.push([diver.p[0] - fw[0] * 1.5, diver.p[1] + 3, diver.p[2] - fw[2] * 1.5, 40 * min(1, dive.fx.lure / 2), 1, .95, .7, 1.2]);
     if (dive.fx.light > 0) L.push([diver.p[0], diver.p[1] + 2.5, diver.p[2], 30 * min(1, dive.fx.light / 2), .45, 1, .95, 1.1]);
     const cand = [];
-    cand.push([pathX(2) + 4, floorAt(pathX(2) + 4, 2) + 1.5, 2, 12, 1, .7, .35, 2]);
+    cand.push([pathX(BUOY_Z) + 4, floorAt(pathX(BUOY_Z) + 4, BUOY_Z) + 1.5, BUOY_Z, 12, 1, .7, .35, 2]);
     if (!dive.items.chest) cand.push([...dive.chest.p.map((v, i) => i === 1 ? v + 1 : v), 7, 1, .8, .4, 1.6]);
     if (!dive.items.log) cand.push([...dive.log.p.map((v, i) => i === 1 ? v + .8 : v), 10, .5, .8, 1, 2]);
     for (const c of dive.creatures) if (c.alive && c.sp === "jelly") cand.push([c.p[0], c.p[1], c.p[2], 6, .6, .9, 1, .9]);
@@ -1470,7 +1573,7 @@ function dynamicInstances() {
     const [bx, bz] = boulderPos(), by = floorAt(bx, bz);
     if (dive.boulder.alive) { add("rock0", bx, by + 1.5, bz, 6.2, .3, 0, 0, 0, 0, [.75, .72, .68]); add("rock2", bx - 3, by + .5, bz + 1.5, 4, 1.3, 0, 0, 0, 0, [.7, .68, .64]); add("rock1", bx + 3.5, by + .8, bz - 1, 4.2, 2.1, 0, 0, 0, 0, [.72, .7, .66]) }
     else for (let k = 0; k < 7; k++) add("rock" + (k % 4), bx + sin(k * 2.3) * 5, by + .2, bz + cos(k * 1.7) * 3, 1.2 + (k % 3) * .4, k, 0, 0, 0, 0, [.7, .68, .64]);
-    const by2 = floorAt(pathX(2) + 4, 2); halo([pathX(2) + 4, by2 + 1.2, 2], 3.2, [1, .65, .3], .8 + .3 * sin(dive.t * 2));
+    const by2 = floorAt(pathX(BUOY_Z) + 4, BUOY_Z); halo([pathX(BUOY_Z) + 4, by2 + 1.2, BUOY_Z], 3.2, [1, .65, .3], .8 + .3 * sin(dive.t * 2));
     for (const b of dive.fx.bubbles) if (b.t > 0) halo(b.p, .18, b.col, .5 * (1 - b.t / b.life));
   }
   const list = []; let n = 0; for (const [name, arr] of Object.entries(groups)) { list.push([models[name], n, arr.length / 12]); n += arr.length / 12 }
@@ -1534,8 +1637,8 @@ function drawOverlay(dt) {
     const r = guideR(c, s);
     g.globalAlpha = inR ? .75 : .3; g.strokeStyle = S.color; g.lineWidth = 2;
     g.beginPath(); g.arc(s.x, s.y, r, 0, TAU); g.setLineDash([4, 6]); g.stroke(); g.setLineDash([]);
-    if (c.loops > 0) { g.lineWidth = 5; g.beginPath(); g.arc(s.x, s.y, r + 6, -PI / 2, -PI / 2 + TAU * c.loops / S.loops); g.stroke() }
-    if (inR || S.danger) { g.font = "700 12px system-ui"; g.fillStyle = S.danger ? "#ff8080" : "#fff"; g.textAlign = "center"; g.fillText(`${S.danger ? "⚠ 危険 " : ""}${S.name}（${c.loops}/${S.loops}周）${S.pearls}G`, s.x, s.y - r - 8) }
+    if (c.loops > 0) { g.lineWidth = 5; g.beginPath(); g.arc(s.x, s.y, r + 6, -PI / 2, -PI / 2 + TAU * c.loops / 100); g.stroke() }
+    if (inR || S.danger) { g.font = "700 12px system-ui"; g.fillStyle = S.danger ? "#ff8080" : "#fff"; g.textAlign = "center"; g.fillText(`${S.danger ? "⚠ 危険 " : ""}${S.name}${c.loops > 0 ? `（捕獲 ${c.loops}%）` : ""} ${S.pearls}G`, s.x, s.y - r - 8) }
     g.globalAlpha = 1;
   }
   // the target being traced: guide ring, no-go core, progress arc
@@ -1545,11 +1648,13 @@ function drawOverlay(dt) {
       const S = SPECIES[c.sp], gr = guideR(c, s), br = bodyR(c, s);
       g.fillStyle = "rgba(255,90,90,.12)"; g.beginPath(); g.arc(s.x, s.y, br, 0, TAU); g.fill();
       g.strokeStyle = "rgba(255,255,255,.55)"; g.lineWidth = 2; g.setLineDash([6, 6]); g.beginPath(); g.arc(s.x, s.y, gr, 0, TAU); g.stroke(); g.setLineDash([]);
-      for (let k = 0; k < S.loops; k++) { g.strokeStyle = k < c.loops ? S.color : "rgba(255,255,255,.18)"; g.lineWidth = 6; g.beginPath(); g.arc(s.x, s.y, gr + 12 + k * 9, 0, TAU); g.stroke() }
-      if (capLast !== null && abs(capAcc) > .02) { g.strokeStyle = "#fff6a8"; g.lineWidth = 8; g.lineCap = "round"; g.beginPath(); g.arc(s.x, s.y, gr + 12 + c.loops * 9, capLast - capAcc, capLast, capAcc < 0); g.stroke() }
+      g.strokeStyle = "rgba(255,255,255,.18)"; g.lineWidth = 10; g.beginPath(); g.arc(s.x, s.y, gr + 16, 0, TAU); g.stroke();
+      g.strokeStyle = S.color; g.beginPath(); g.arc(s.x, s.y, gr + 16, -PI / 2, -PI / 2 + TAU * c.loops / 100); g.stroke();
+      if (capLast !== null && abs(capAcc) > .02) { const q = loopQuality(), est = min(100 - c.loops, loopDmg(c, q)) * abs(capAcc) / TAU, a0 = -PI / 2 + TAU * c.loops / 100; g.strokeStyle = GRADE(q)[1]; g.globalAlpha = .75; g.lineWidth = 10; g.beginPath(); g.arc(s.x, s.y, gr + 16, a0, a0 + TAU * est / 100); g.stroke(); g.globalAlpha = 1;
+        g.strokeStyle = "#fff6a8"; g.lineWidth = 5; g.lineCap = "round"; g.beginPath(); g.arc(s.x, s.y, gr + 30, capLast - capAcc, capLast, capAcc < 0); g.stroke() }
       g.font = "800 14px system-ui"; g.textAlign = "center"; g.fillStyle = "#fff"; g.strokeStyle = "#000a"; g.lineWidth = 4;
-      const label = `${S.name}（${S.pearls}G）　${c.loops}/${S.loops}周　${round(abs(capAcc) / TAU * 100)}%`;
-      g.strokeText(label, s.x, s.y - gr - 18 - S.loops * 9); g.fillText(label, s.x, s.y - gr - 18 - S.loops * 9);
+      const label = `${S.name}（${S.pearls}G）　捕獲 ${c.loops}%　${capRs.length > 6 ? "今の線：" + GRADE(loopQuality())[0] : ""}`;
+      g.strokeText(label, s.x, s.y - gr - 44); g.fillText(label, s.x, s.y - gr - 44);
     }
   }
   if (capWarn > 0) { capWarn -= dt; g.font = "800 16px system-ui"; g.textAlign = "center"; g.fillStyle = "#ffb0a0"; g.strokeStyle = "#000a"; g.lineWidth = 4; const p = trail[trail.length - 1]; if (p) { g.strokeText(capWarnText, p.x, p.y - 22); g.fillText(capWarnText, p.x, p.y - 22) } }
@@ -1566,7 +1671,7 @@ function drawOverlay(dt) {
   for (const p of pops) { p.t += dt; const a = 1 - p.t / 1.3; if (a <= 0) continue; g.globalAlpha = a; g.font = "800 18px system-ui"; g.textAlign = "center"; g.fillStyle = p.col; g.strokeStyle = "#0009"; g.lineWidth = 4; g.strokeText(p.text, p.x, p.y - 30 - p.t * 30); g.fillText(p.text, p.x, p.y - 30 - p.t * 30); g.globalAlpha = 1 }
   pops = pops.filter(p => p.t < 1.3);
   // ascend prompt
-  const b = [pathX(2) + 4, floorAt(pathX(2) + 4, 2) + 2, 2];
+  const b = [pathX(BUOY_Z) + 4, floorAt(pathX(BUOY_Z) + 4, BUOY_Z) + 2, BUOY_Z];
   if (dist3(b, diver.p) < 8) { const s = project(b); if (s) { g.font = "800 16px system-ui"; g.textAlign = "center"; g.fillStyle = "#ffe0a0"; g.fillText("E で浮上（帰還）", s.x, s.y - 40) } }
   for (const h of dive.sharks) {
     if (h.st !== "stalk" && h.st !== "windup" && h.st !== "lunge") continue;
@@ -1583,7 +1688,7 @@ function drawOverlay(dt) {
   }
   if (dive.fx.ink > 0) { const k = min(1, dive.fx.ink / 1.5) * (dive.fx.light > 0 || dive.fx.lure > 0 ? .35 : .85); const gr = g.createRadialGradient(CW / 2, CH / 2, 40, CW / 2, CH / 2, max(CW, CH) * .6); gr.addColorStop(0, `rgba(8,0,14,${k * .55})`); gr.addColorStop(1, `rgba(4,0,8,${k})`); g.fillStyle = gr; g.fillRect(0, 0, CW, CH) }
   if (Bs && Bs.alive && dist3(Bs.p, diver.p) < 70) {
-    const t = `光る巨影　捕獲 ${Bs.loops} / ${SPECIES.squid.loops}　${isLit(Bs) ? "照らされている：今なら囲める！" : "暗くて囲めない（光で照らそう）"}`;
+    const t = `光る巨影　捕獲 ${Bs.loops}%　${isLit(Bs) ? "照らされている：今なら囲める！" : "暗くて囲めない（光で照らそう）"}`;
     g.font = "800 16px system-ui"; g.textAlign = "center"; g.fillStyle = isLit(Bs) ? "#ffd0ff" : "#a99bb5"; g.strokeStyle = "#000c"; g.lineWidth = 5; g.strokeText(t, CW / 2, 92); g.fillText(t, CW / 2, 92);
   }
   for (const P of NET.players.values()) {
@@ -1600,7 +1705,7 @@ function drawOverlay(dt) {
   if (hurtT > 0) { hurtT -= dt; g.fillStyle = `rgba(255,40,40,${hurtT * .35})`; g.fillRect(0, 0, CW, CH) }
   // tutorial hint
   let hint = "";
-  if ((save.tut || 0) < 2 && !drawing && dive.creatures.some(c => c.alive && dist3(c.p, diver.p) < dive.light[1])) hint = "生き物の近くでドラッグを始めて、点線の輪に沿ってぐるっと1周なぞろう";
+  if ((save.tut || 0) < 2 && !drawing && dive.creatures.some(c => c.alive && dist3(c.p, diver.p) < dive.light[1])) hint = "生き物の近くでドラッグを始めて、点線の輪に沿ってぐるっと丸くなぞろう";
   if (drawing && capT && (save.tut || 0) < 2) hint = "その調子！円を描くように、まわりをなぞり続けよう";
   if (drawing && !capT) hint = "生き物のすぐ近くからなぞり始めよう";
   $("hint").textContent = hint;
@@ -1657,7 +1762,7 @@ function drawMap() {
   const m = $("map"), g = m.getContext("2d");
   const oy = clamp(my - 210, 0, 0); g.clearRect(0, 0, 240, 580); g.drawImage(mapBase, 0, 0); g.drawImage(fogC, 0, 0);
   const dot = (x, z, col, r) => { const [a, b] = mapXY(x, z); g.fillStyle = col; g.beginPath(); g.arc(a, b, r, 0, TAU); g.fill() };
-  dot(pathX(2) + 4, 2, "#ffb054", 6);
+  dot(pathX(BUOY_Z) + 4, BUOY_Z, "#ffb054", 6);
   for (const P of NET.players.values()) if (P.diving && P.p) dot(P.p[0], P.p[2], P.down > 0 ? "#ff5a5a" : "#7ff0c8", 5);
   if (!dive.items.chest && dive.maxZ > 120) dot(dive.chest.p[0], dive.chest.p[2], "#ffd36b", 5);
   if (dive.maxZ > 300) dot(dive.log.p[0], dive.log.p[2], "#7fc8ff", 5);
@@ -1693,7 +1798,7 @@ function sfx(n, x = 0) {
   if (NET.ghost) return;
   if (!AC) return;
   if (n === "tick") tone(520 + 380 * x, .09, "sine", .07);
-  else if (n === "loop") { tone(880, .14, "sine", .12); tone(1320, .22, "sine", .1, 1320, .08) }
+  else if (n === "loop") { const f = x >= 1.3 ? 1.5 : x >= 1 ? 1.25 : 1; tone(880 * f, .14, "sine", .12); tone(1320 * f, .22, "sine", .1, 1320 * f, .08); if (x >= 1.3) tone(1760 * f, .3, "sine", .08, 2640, .05) }
   else if (n === "capture") [660, 880, 1100, 1320, 1760].forEach((f, i) => tone(f, .25, "triangle", .1, f, i * .07));
   else if (n === "break") { tone(220, .3, "sawtooth", .08, 70); tone(160, .25, "square", .04, 60) }
   else if (n === "ability") { tone(300, .5, "sine", .12, 1200); tone(450, .5, "triangle", .06, 1800, .05) }
@@ -1706,44 +1811,129 @@ function sfx(n, x = 0) {
   else if (n === "bite") { noise(.25, 1800, .35); tone(90, .45, "square", .18, 40); tone(60, .5, "sine", .25, 35, .02) }
 }
 // ================= base screen =================
+// ---------- icons (simple silhouettes, colored per species) ----------
+const SIL = {
+  clam: '<path d="M6 26 Q20 4 34 26 Z" /><path d="M6 26 Q20 33 34 26" fill="none" stroke-width="2.5"/><path d="M20 9 L20 25 M13 13 L16 25 M27 13 L24 25" stroke-width="1.6" fill="none" opacity=".45"/>',
+  seahorse: '<path d="M22 6 q8 1 6 8 q-2 4 -6 4 q4 4 2 10 q-2 6 -8 6 q-4 0 -3 -3 q5 0 6 -4 q1 -5 -4 -8 q-3 -3 0 -7 l-6 -1 z"/>',
+  clown: '<path d="M6 20 Q14 9 26 13 L34 8 L32 20 L34 32 L26 27 Q14 31 6 20 Z"/><path d="M14 12 V28 M22 12 V28" stroke="#fff" stroke-width="2.5" opacity=".9"/><circle cx="11" cy="18" r="1.6" fill="#022"/>',
+  jelly: '<path d="M7 20 Q7 6 20 6 Q33 6 33 20 Z"/><path d="M11 20 q-2 6 1 13 M17 20 q-2 7 1 14 M23 20 q2 7 -1 14 M29 20 q2 6 -1 13" fill="none" stroke-width="2"/>',
+  turtle: '<ellipse cx="19" cy="20" rx="11" ry="9"/><circle cx="33" cy="19" r="4"/><path d="M10 11 l-5 -4 M10 29 l-5 4 M26 11 l4 -5 M26 29 l4 5" stroke-width="4" stroke-linecap="round"/><path d="M13 16 h12 M13 24 h12 M19 12 v16" stroke="#0004" stroke-width="1.5"/>',
+  manta: '<path d="M20 9 Q26 12 38 22 Q28 21 22 25 L20 36 L18 25 Q12 21 2 22 Q14 12 20 9 Z"/><path d="M17 10 l-1 -4 M23 10 l1 -4" stroke-width="2"/>',
+  puffer: '<circle cx="20" cy="20" r="10"/><path d="M20 6 v-3 M20 34 v3 M6 20 h-3 M34 20 h3 M10 10 l-2 -2 M30 10 l2 -2 M10 30 l-2 2 M30 30 l2 2 M14 7 l-1 -3 M26 7 l1 -3 M14 33 l-1 3 M26 33 l1 3" stroke-width="2.2"/><circle cx="25" cy="17" r="2" fill="#022"/>',
+  crab: '<ellipse cx="20" cy="23" rx="10" ry="7"/><path d="M11 18 q-6 -4 -4 -10 q4 2 3 6 M29 18 q6 -4 4 -10 q-4 2 -3 6" stroke-width="3" fill="none"/><path d="M11 25 l-6 4 M12 28 l-4 6 M29 25 l6 4 M28 28 l4 6" stroke-width="2"/>',
+  isopod: '<ellipse cx="20" cy="20" rx="9" ry="14"/><path d="M11 12 h18 M11 17 h18 M11 22 h18 M11 27 h18" stroke="#0005" stroke-width="1.6"/><path d="M11 14 l-5 -2 M11 20 l-5 0 M11 26 l-5 2 M29 14 l5 -2 M29 20 l5 0 M29 26 l5 2 M16 6 l-3 -4 M24 6 l3 -4" stroke-width="1.6"/>',
+  angler: '<path d="M6 22 Q8 10 22 11 Q32 12 33 22 Q30 31 18 31 Q8 31 6 22 Z"/><path d="M6 22 l-4 -5 v10 z"/><path d="M24 11 q2 -8 9 -6" fill="none" stroke-width="1.6"/><circle cx="34" cy="6" r="3" fill="#fff6c0"/><path d="M24 26 l2 -3 l2 3 l2 -3 l2 3" stroke="#fff" stroke-width="1.2" fill="none"/>',
+  squid: '<path d="M20 2 Q29 10 27 22 L13 22 Q11 10 20 2 Z"/><path d="M14 22 q-4 8 -2 16 M18 22 q-1 8 0 16 M22 22 q1 8 0 16 M26 22 q4 8 2 16" fill="none" stroke-width="2.4"/><circle cx="17" cy="18" r="1.8" fill="#fff"/><circle cx="23" cy="18" r="1.8" fill="#fff"/>',
+  shark: '<path d="M3 22 Q14 14 28 17 L36 10 L34 21 L37 31 L28 25 Q14 28 3 22 Z"/><path d="M15 16 L19 6 L23 16 Z"/><circle cx="9" cy="20" r="1.4" fill="#022"/><path d="M12 23 h5" stroke="#0006" stroke-width="1"/>',
+};
+const icon = (sp, known = true) => `<svg viewBox="0 0 40 40" fill="${known ? SPECIES[sp].color : "#24506a"}" stroke="${known ? SPECIES[sp].color : "#24506a"}">${SIL[sp] || '<circle cx="20" cy="20" r="12"/>'}</svg>`;
+const UICON = {
+  tank: '<rect x="13" y="8" width="14" height="28" rx="7" fill="#33d6ff"/><rect x="17" y="3" width="6" height="6" rx="1.5" fill="#9fe8ff"/><path d="M16 16 v14" stroke="#fff" stroke-width="2" opacity=".6"/>',
+  fin: '<path d="M14 4 h12 l6 30 q-12 6 -24 0 z" fill="#7ff0c8"/><path d="M20 10 v24 M15 14 l-2 18 M25 14 l2 18" stroke="#0a3449" stroke-width="1.5"/>',
+  light: '<circle cx="20" cy="16" r="10" fill="#fff3a0"/><rect x="15" y="25" width="10" height="9" rx="2" fill="#c9a24a"/><path d="M20 2 v-0 M6 8 l-3 -2 M34 8 l3 -2" stroke="#fff3a0" stroke-width="2"/>',
+  caps: '<rect x="6" y="12" width="28" height="16" rx="8" fill="#b9a8ff"/><path d="M20 12 v16" stroke="#6a54d8" stroke-width="2"/><rect x="20" y="12" width="14" height="16" rx="8" fill="#8f7cf2"/>',
+  suit: '<circle cx="20" cy="18" r="13" fill="#ffb054"/><rect x="11" y="12" width="18" height="12" rx="6" fill="#0a3449"/><path d="M14 16 h5" stroke="#5ff0ff" stroke-width="2"/><rect x="12" y="30" width="16" height="7" rx="3" fill="#c97a2a"/>',
+};
+const uicon = k => `<svg viewBox="0 0 40 40">${UICON[k]}</svg>`;
+const COIN = '<svg viewBox="0 0 40 40" width="26" height="26"><circle cx="20" cy="20" r="16" fill="#f2c45a"/><circle cx="20" cy="20" r="11.5" fill="none" stroke="#a87a18" stroke-width="2.5"/><text x="20" y="26" text-anchor="middle" font-size="15" font-weight="900" fill="#7a5410" font-family="system-ui">G</text></svg>';
+const BUOYI = '<svg viewBox="0 0 40 40" width="24" height="24"><path d="M20 4 v8" stroke="#ffcf7a" stroke-width="3"/><circle cx="20" cy="22" r="11" fill="#ff8a3a"/><path d="M9 22 h22" stroke="#fff" stroke-width="4"/></svg>';
+let baseTab = "prep", prepSel = null;
 function renderBase() {
-  $("base").classList.remove("hide"); setHud(false); mpRender();
-  $("bPearl").textContent = save.pearls;
+  $("base").classList.remove("hide"); setHud(false);
   const m = MISSIONS[save.mission];
   if (!m && !save.req) { save.req = newReq(); persist() }
-  $("bMis").innerHTML = m ? `<b>${m.ch === 2 ? "第2章 深淵" : "第1章"}　${save.mission + 1} / ${MISSIONS.length}：${m.title}</b><div style="font-size:13px;color:#b9dbe6;margin-top:4px">${m.hint}</div><div style="font-size:12px;color:#ffe9a8;margin-top:2px">報酬 ${m.reward}G</div>` : `<b>依頼：${SPECIES[save.req.sp].name}を${save.req.n}匹つれて帰る</b><div style="font-size:13px;color:#b9dbe6;margin-top:4px">全ミッションクリア済み。帰還のたびに新しい依頼が届く。</div><div style="font-size:12px;color:#ffe9a8;margin-top:2px">報酬 真珠${save.req.reward}</div>`;
-  renderPrep();
-  $("bUp").innerHTML = "";
-  for (const [k, u] of Object.entries(UPG)) {
-    const lv = save.up[k], max = u.costs.length, cost = u.costs[lv];
-    const d = document.createElement("div"); d.className = "up";
-    d.innerHTML = `<b>${u.name} <small>Lv${lv}/${max}</small></b><small>今：${u.fmt(u.val(lv))}</small>${lv < max ? `<small>次：${u.fmt(u.val(lv + 1))}</small>` : "<small>最大</small>"}`;
-    const btn = document.createElement("button"); btn.textContent = lv < max ? `強化（${cost}G）` : "最大"; btn.disabled = lv >= max || save.pearls < cost;
-    btn.onclick = () => { save.pearls -= cost; save.up[k]++; persist(); renderBase() };
-    d.append(btn); $("bUp").append(d);
-  }
-  $("bItem").innerHTML = "";
-  { const d = document.createElement("div"); d.className = "up"; d.innerHTML = `<b>緊急ブイ <small>×${save.buoys || 0} / 3</small></b><small>潜っている途中に R で、その場からすぐ帰還できる（使い切り）</small>`;
-    const btn = document.createElement("button"); btn.textContent = "買う（20G）"; btn.disabled = save.pearls < 20 || (save.buoys || 0) >= 3; btn.onclick = () => { save.pearls -= 20; save.buoys = (save.buoys || 0) + 1; persist(); renderBase() }; d.append(btn); $("bItem").append(d) }
-  $("bDexT").textContent = `図鑑（${Object.values(save.aq).filter(v => v > 0).length} / ${Object.keys(SPECIES).length} 種）`;
-  $("bAq").innerHTML = Object.entries(SPECIES).map(([k, s]) => `<div class="sp"><i style="background:${save.aq[k] ? s.color : "#234"}"></i><div><b>${save.aq[k] ? s.name : "？？？"}</b> ×${save.aq[k]}<div style="font-size:12px;color:#9cc9d8">${s.danger ? "<span style='color:#ff8080'>危険</span> · " : ""}${s.ability}（${s.loops}周で捕獲 · 売値 ${s.pearls}G）</div></div></div>`).join("");
+  // top bar
+  const ch = m ? m.ch || 1 : 3, inCh = MISSIONS.map((q, i) => [q, i]).filter(([q]) => (q.ch || 1) === (m ? ch : 2));
+  $("bChap").innerHTML = m ? `<b style="color:#e8fbff">${ch === 2 ? "第2章 深淵" : "第1章 海溝"}</b><div class="dots">${inCh.map(([, i]) => `<i class="${i < save.mission ? "on" : i === save.mission ? "now" : ""}"></i>`).join("")}</div>` : `<b style="color:#ffd0ff">全章クリア</b><span>依頼をこなそう</span>`;
+  $("bGold").innerHTML = `${COIN}<span id="bPearl">${save.pearls}</span><small>G</small>`;
+  $("bBuoy").innerHTML = `${BUOYI}<span>×${save.buoys || 0}</span><small>緊急ブイ</small>`;
+  // quest
+  $("bQuest").innerHTML = m
+    ? `<div class="tag">${m.ch === 2 ? "第2章" : "第1章"} ミッション ${save.mission + 1}/${MISSIONS.length}</div><h2>${m.title}</h2><p>${m.hint}</p><div class="rw">${COIN.replace('width="26" height="26"', 'width="18" height="18"')}報酬 ${m.reward}G</div>`
+    : `<div class="tag">依頼</div><h2>${SPECIES[save.req.sp].name}を${save.req.n}匹つれて帰る</h2><p>全ミッションクリア済み。帰還のたびに新しい依頼が届く。</p><div class="rw">${COIN.replace('width="26" height="26"', 'width="18" height="18"')}報酬 ${save.req.reward}G</div>`;
+  // dive stats
+  const st = [["tank", UPG.tank.val(save.up.tank), "酸素"], ["suit", UPG.suit.val(save.up.suit) + "m", "限界深度"], ["caps", `${save.carry.length}/${UPG.caps.val(save.up.caps)}`, "カプセル"], ["light", UPG.light.val(save.up.light)[1] + "m", "輪の距離"]];
+  $("bCarry").innerHTML = `<div style="font-size:12px;color:#8fe4ff;font-weight:800;letter-spacing:.08em;margin-bottom:6px">持って行く仲間</div><div style="display:flex;gap:6px">${Array.from({ length: UPG.caps.val(save.up.caps) }, (_, i) => save.carry[i] ? `<div title="${SPECIES[save.carry[i]].name}" style="width:46px;height:46px;border-radius:10px;background:#0a3449;display:grid;place-items:center">${icon(save.carry[i]).replace("<svg", '<svg width="34" height="34"')}</div>` : `<div style="width:46px;height:46px;border-radius:10px;box-shadow:inset 0 0 0 1.5px #2c6a8566"></div>`).join("")}<div style="flex:1;font-size:11px;color:#6fa8b8;align-self:center;padding-left:6px">${save.carry.length ? "" : "水槽から選べる（準備タブ）"}</div></div>`;
+  $("bStats").innerHTML = st.map(([k, v, l]) => `<div class="stat">${uicon(k)}<b>${v}</b><small>${l}</small></div>`).join("");
+  // tabs
+  const canUp = Object.entries(UPG).filter(([k, u]) => save.up[k] < u.costs.length && save.pearls >= u.costs[save.up[k]]).length;
+  const TABS = [["prep", "準備"], ["up", "強化", canUp], ["dex", "図鑑"], ["mp", "みんなで" + (NET.on ? "●" : "")], ["how", "遊び方"]];
+  $("bTabs").innerHTML = ""; for (const [k, l, n] of TABS) { const b = document.createElement("button"); b.className = "tab" + (baseTab === k ? " on" : ""); b.innerHTML = l + (n ? `<span class="n">${n}</span>` : ""); b.onclick = () => { baseTab = k; prepSel = null; renderBase(); sfx("tick", 1) }; $("bTabs").append(b) }
+  const P = $("bPane"); const mp = $("mpCard"); mp.classList.add("hidden"); mp.append($("reset")); $("base").append(mp); P.innerHTML = "";
+  if (baseTab === "prep") renderPrep(P);
+  else if (baseTab === "up") renderUpg(P);
+  else if (baseTab === "dex") renderDex(P);
+  else if (baseTab === "mp") { P.innerHTML = `<div class="sec"><h4>みんなで潜る <span>2〜4人・協力プレイ</span></h4><div class="howto">1人が「部屋を作る」と4文字のコードが出ます。ほかの人は同じページを開き、コードを入れて「参加する」。<br>生き物は全員で共通。大物はみんなで囲めて、手伝った人は素材をもらえます。<kbd>F</kbd> で仲間に酸素を分けたり、マンタやウミガメに相乗りできます。</div></div>`; mp.classList.remove("hidden"); mp.className = "sec row"; P.append(mp); $("reset").classList.add("hidden") }
+  else { P.innerHTML = `<div class="sec"><h4>遊び方</h4><div class="howto">
+      <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> で泳ぐ（Wが深い方向）。<kbd>Shift</kbd> でダッシュ（スタミナを使う）。<br>
+      生き物の近くで<b>ドラッグを始め、点線の輪に沿ってぐるっとなぞる</b>と捕獲ゲージが増え、100%で捕獲。<b>丸くきれいに、点線の近くを</b>なぞるほど一気に増えます。描いている間は時間がゆっくり流れます。<br>
+      <span style="color:#ff8080">赤い生き物は危険</span>。触れると酸素が減り、なぞる線も切られます。<br>
+      捕まえた生き物は <kbd>1</kbd>〜<kbd>5</kbd> で力を借りる（使うと海に帰る）。右クリックで逃がす。<br>
+      酸素がなくなる前に、スタートの光るブイで <kbd>E</kbd> を押して浮上。<kbd>R</kbd> は緊急ブイ。戻れないと、カプセルの生き物と金貨の半分を失います。
+    </div></div><div class="sec"><h4>記録</h4></div>`; const r = $("reset"); r.classList.remove("hidden"); P.lastChild.append(r) }
+  mpRender();
 }
-function renderPrep() {
-  const el = $("bPrep"), capsMax = UPG.caps.val(save.up.caps); el.innerHTML = "";
-  const mk = (title, list, max, move, moveLabel, canMove) => {
-    const box = document.createElement("div"); box.style.marginBottom = "10px"; box.innerHTML = `<div style="font-size:13px;color:#8fe4ff;margin-bottom:6px">${title}（${list.length}/${max}）</div>`;
-    const row = document.createElement("div"); row.className = "row";
-    list.forEach((sp, i) => { const S = SPECIES[sp], c = document.createElement("div"); c.className = "sp"; c.style.gap = "8px"; c.innerHTML = `<i style="background:${S.color};width:18px;height:18px"></i><b style="font-size:13px">${S.name}</b>`;
-      const b1 = document.createElement("button"); b1.textContent = moveLabel; b1.style.cssText = "padding:5px 8px;font-size:12px"; b1.disabled = !canMove(); b1.onclick = () => { move(i); persist(); renderBase() };
-      const b2 = document.createElement("button"); b2.textContent = `売る +${S.pearls}G`; b2.style.cssText = "padding:5px 8px;font-size:12px;background:#4a3a14"; b2.onclick = () => { list.splice(i, 1); save.pearls += S.pearls; persist(); renderBase() };
-      c.append(b1, b2); row.append(c) });
-    if (!list.length) row.innerHTML = `<span style="font-size:12px;color:#7fa7b5">空っぽ</span>`;
-    box.append(row); el.append(box);
-  };
-  mk("カプセル（最初から持って行く）", save.carry, capsMax, i => save.tank.push(save.carry.splice(i, 1)[0]), "水槽へ", () => save.tank.length < TANK_MAX);
-  mk("水槽（保管）", save.tank, TANK_MAX, i => save.carry.push(save.tank.splice(i, 1)[0]), "連れて行く", () => save.carry.length < capsMax);
+function slotEl(sp, i, where, sel) {
+  const d = document.createElement("div"); d.className = "slot" + (sel ? " sel" : "");
+  d.innerHTML = `<span class="k">${where === "carry" ? i + 1 : ""}</span>${icon(sp)}<span>${SPECIES[sp].name.replace(/（.*）/, "")}</span>`;
+  d.onclick = () => { prepSel = sel ? null : { where, i }; renderBase() }; return d;
+}
+function renderPrep(P) {
+  const capsMax = UPG.caps.val(save.up.caps), capsTop = UPG.caps.val(UPG.caps.costs.length);
+  const sec = (title, sub) => { const s = document.createElement("div"); s.className = "sec"; s.innerHTML = `<h4>${title} <span>${sub}</span></h4>`; const row = document.createElement("div"); row.className = "slots"; s.append(row); P.append(s); return row };
+  const r1 = sec("カプセル", `次の潜水に持って行く ${save.carry.length}/${capsMax}`);
+  for (let i = 0; i < capsTop; i++) {
+    if (i < save.carry.length) r1.append(slotEl(save.carry[i], i, "carry", prepSel && prepSel.where === "carry" && prepSel.i === i));
+    else { const d = document.createElement("div"); d.className = i < capsMax ? "slot empty" : "slot lock"; d.innerHTML = i < capsMax ? "空き" : "強化で<br>解放"; r1.append(d) }
+  }
+  const r2 = sec("水槽", `港で保管 ${save.tank.length}/${TANK_MAX}`);
+  for (let i = 0; i < TANK_MAX; i++) {
+    if (i < save.tank.length) r2.append(slotEl(save.tank[i], i, "tank", prepSel && prepSel.where === "tank" && prepSel.i === i));
+    else { const d = document.createElement("div"); d.className = "slot empty"; d.textContent = "空き"; r2.append(d) }
+  }
+  // selection detail
+  const det = document.createElement("div"); det.className = "sec";
+  if (prepSel) {
+    const list = prepSel.where === "carry" ? save.carry : save.tank, sp = list[prepSel.i], S = SPECIES[sp];
+    if (sp) {
+      det.innerHTML = `<div class="detail">${icon(sp)}<div class="tx"><b>${S.name}</b>${S.danger ? ' <span style="color:#ff8080;font-size:11px;font-weight:900">危険</span>' : ""}<div>${S.ability}</div><div>効果範囲 ${S.range}m · 売値 <span class="pearl">${S.pearls}G</span></div></div><div class="acts"></div></div>`;
+      const acts = det.querySelector(".acts");
+      const mv = document.createElement("button"); mv.className = "btn"; mv.textContent = prepSel.where === "carry" ? "水槽にしまう" : "カプセルに入れる";
+      mv.disabled = prepSel.where === "carry" ? save.tank.length >= TANK_MAX : save.carry.length >= capsMax;
+      mv.onclick = () => { if (prepSel.where === "carry") save.tank.push(save.carry.splice(prepSel.i, 1)[0]); else save.carry.push(save.tank.splice(prepSel.i, 1)[0]); prepSel = null; persist(); sfx("pickup"); renderBase() };
+      const sl = document.createElement("button"); sl.className = "btn gold"; sl.textContent = `売る +${S.pearls}G`;
+      sl.onclick = () => { list.splice(prepSel.i, 1); save.pearls += S.pearls; prepSel = null; persist(); sfx("pickup"); renderBase() };
+      acts.append(mv, sl);
+    }
+  } else det.innerHTML = `<div style="font-size:12px;color:#6fa8b8">生き物をクリックすると、能力の確認・入れ替え・売却ができます。</div>`;
+  P.append(det);
+  // items
+  const it = sec("道具", "");
+  const d = document.createElement("div"); d.className = "detail"; d.style.flex = "1";
+  d.innerHTML = `${BUOYI.replace('width="24" height="24"', 'width="52" height="52"')}<div class="tx"><b>緊急ブイ</b> <span style="color:#8fc3d3">×${save.buoys || 0} / 3</span><div>潜っている途中に R で、その場からすぐ帰還できる（使い切り）</div></div>`;
+  const b = document.createElement("button"); b.className = "btn gold"; b.textContent = "買う 20G"; b.disabled = save.pearls < 20 || (save.buoys || 0) >= 3; b.onclick = () => { save.pearls -= 20; save.buoys = (save.buoys || 0) + 1; persist(); sfx("pickup"); renderBase() };
+  d.append(b); it.append(d);
+}
+function renderUpg(P) {
+  P.innerHTML = `<div class="sec"><h4>強化 <span>ゴールドで装備を強くする</span></h4><div class="upgs" id="upgs"></div></div>`;
+  for (const [k, u] of Object.entries(UPG)) {
+    const lv = save.up[k], mx = u.costs.length, cost = u.costs[lv], d = document.createElement("div"); d.className = "upg";
+    d.innerHTML = `${uicon(k)}<b>${u.name}</b><div class="pips">${Array.from({ length: mx + 1 }, (_, i) => `<i class="${i <= lv ? "on" : ""}"></i>`).join("")}</div>
+      <div class="nx"><span>${u.fmt(u.val(lv))}</span>${lv < mx ? `<em>→ ${u.fmt(u.val(lv + 1)).replace(/^[^0-9]*/, "")}</em>` : "<em>最大</em>"}</div>`;
+    const b = document.createElement("button"); b.className = "btn gold";
+    b.textContent = lv >= mx ? "最大レベル" : save.pearls < cost ? `${cost}G（あと${cost - save.pearls}G）` : `強化する ${cost}G`;
+    b.disabled = lv >= mx || save.pearls < cost; b.onclick = () => { save.pearls -= cost; save.up[k]++; persist(); sfx("capture"); renderBase() };
+    d.append(b); P.querySelector("#upgs").append(d);
+  }
+}
+function renderDex(P) {
+  const got = Object.values(save.aq).filter(v => v > 0).length, all = Object.keys(SPECIES).length;
+  P.innerHTML = `<div class="sec"><h4>図鑑 <span>${got} / ${all} 種</span></h4><div class="dex">${Object.entries(SPECIES).map(([k, s]) => {
+    const kn = save.aq[k] > 0;
+    return `<div class="dexc ${kn ? "" : "unk"}">${s.danger ? '<span class="dg">危険</span>' : ""}<span class="cnt">×${save.aq[k]}</span>${icon(k, kn)}<b>${kn ? s.name.replace(/（.*）/, "") : "？？？"}</b><small>${kn ? s.ability : "まだ出会っていない"}</small><small style="color:#ffe9a8">手ごわさ ${"★".repeat(s.loops)}<span style="opacity:.25">${"★".repeat(max(0, 6 - s.loops))}</span> · ${s.pearls}G</small></div>` }).join("")}</div></div>`;
 }
 $("go").onclick = () => { if (NET.on && !NET.host && !NET.sea) return; audio(); newDive() };
+addEventListener("keydown", e => { if (state === "base" && e.code === "Enter" && document.activeElement?.tagName !== "INPUT" && !$("go").disabled) $("go").click() });
 $("reset").onclick = () => { if (confirmReset()) { save = defSave(); persist(); renderBase() } };
 let resetArm = 0; function confirmReset() { if (Date.now() - resetArm < 3000) return true; resetArm = Date.now(); $("reset").textContent = "もう一度押すと消えます"; setTimeout(() => $("reset").textContent = "記録を消す", 3000); return false }
 
@@ -1760,12 +1950,12 @@ function frame(t) {
 }
 renderBase(); setHud(false);
 window.__T = {
-  NET, net: m => onMsg(m), rescue: () => tryRescue(), keyF: () => keyF(),
+  NET, base: () => renderBase(), net: m => onMsg(m), rescue: () => tryRescue(), keyF: () => keyF(),
   get state() { return state }, get dive() { return dive }, diver, save: () => save, SPECIES, MISSIONS,
   start: () => newDive(),
   setPos: (x, z) => { diver.p = [x, floorAt(x, z) + 2.6, z]; camera(0) },
   run: (sec, k = {}) => { Object.assign(keys, k); const n = round(sec * 60); for (let i = 0; i < n; i++) { if (state === "dive") step(1 / 60); else if (NET.world) worldOnly(1 / 60); time += 1 / 60 } for (const kk in k) keys[kk] = false; camera(0) },
-  loopAround: i => { const c = dive.creatures[i]; camera(0); const s = project(c.p); capT = c; capAcc = 0; capLast = null; capQ = 0; const R = guideR(c, s) * 1.1; for (let a = 0; a <= 34; a++) trackLoop({ x: s.x + cos(a / 32 * TAU) * R, y: s.y + sin(a / 32 * TAU) * R }); capT = null; return c.loops },
+  loopAround: (i, wob = 0, rm = 1.1) => { const c = dive.creatures[i]; camera(0); const s = project(c.p); capT = c; capAcc = 0; capLast = null; capQ = 0; capRs = []; const R = guideR(c, s) * rm; for (let a = 0; a <= 34; a++) { const w = 1 + wob * sin(a / 32 * TAU * 3); trackLoop({ x: s.x + cos(a / 32 * TAU) * R * w, y: s.y + sin(a / 32 * TAU) * R * w }) } capT = null; return c.loops },
   drawState: (on, i) => { drawing = on; capT = on ? dive.creatures[i] : null; if (on) { const s = project(capT.p); const R = guideR(capT, s) * 1.1; trail = []; capLast = null; capAcc = 0; for (let a = 0; a <= 20; a++) { const p = { x: s.x + cos(a / 32 * TAU) * R, y: s.y + sin(a / 32 * TAU) * R, t: performance.now() }; trail.push(p); trackLoop(p) } } },
   overlay: () => drawOverlay(0), shark: i => dive.sharks[i], hover: sp => sp ? showTip(sp) : hideTip(),
   use: i => useCap(i), pend: () => pend, ok: () => $("rOk").click(), ascend: () => tryAscend(), give: sp => { dive.caps.push(sp); renderCaps() },
